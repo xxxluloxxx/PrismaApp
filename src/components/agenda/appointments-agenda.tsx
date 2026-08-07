@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 
+import { useRealtimeRefresh } from "@/lib/supabase/realtime";
 import type { AppointmentWithRelations } from "@/lib/types/appointment";
 import { APPOINTMENT_STATUS_LABELS } from "@/lib/types/appointment";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +22,8 @@ export function AppointmentsAgenda({
 }: {
   appointments: AppointmentWithRelations[];
 }) {
+  useRealtimeRefresh("appointments");
+
   const grouped = new Map<string, AppointmentWithRelations[]>();
   for (const appt of appointments) {
     const day = new Date(appt.starts_at).toLocaleDateString("es-EC", {

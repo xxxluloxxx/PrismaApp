@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { useRealtimeRefresh } from "@/lib/supabase/realtime";
 import type { QuoteWithNames } from "@/lib/types/quote";
 import { QUOTE_STATUS_LABELS } from "@/lib/types/quote";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,8 @@ function money(n: number, currency = "USD") {
 }
 
 export function QuotesList({ quotes }: { quotes: QuoteWithNames[] }) {
+  useRealtimeRefresh("quotes");
+  useRealtimeRefresh("payments");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
