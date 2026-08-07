@@ -12,6 +12,7 @@ export const primaryNav: NavItem[] = [
   { href: "/pacientes", label: "Pacientes" },
   { href: "/agenda", label: "Agenda" },
   { href: "/fichas", label: "Fichas" },
+  { href: "/odontograma", label: "Odontograma" },
   { href: "/presupuestos", label: "Presupuestos" },
 ];
 

@@ -63,6 +63,18 @@ export function PatientDetail({ patient }: { patient: Patient }) {
           >
             Editar
           </Link>
+          <Link
+            href={`/odontograma?patient=${patient.id}`}
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            Odontograma
+          </Link>
+          <Link
+            href={`/presupuestos/nuevo?patient=${patient.id}`}
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            Presupuesto
+          </Link>
           <Button
             variant="outline"
             disabled={pending}
