@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { updateStaffAction } from "@/lib/staff/actions";
-import type { Profile } from "@/lib/types/profile";
+import type { Profile, UserRole } from "@/lib/types/profile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,23 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
         return;
       }
       toast.success(member.is_active ? "Desactivado" : "Reactivado");
+      router.refresh();
+    });
+  }
+
+  function changeRole(member: Profile, role: UserRole) {
+    if (role === member.role) return;
+    startTransition(async () => {
+      const result = await updateStaffAction(member.id, { role });
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+      toast.success(
+        role === "administrador"
+          ? `${member.full_name} ahora es administrador`
+          : `${member.full_name} ahora es médico`
+      );
       router.refresh();
     });
   }
@@ -157,7 +174,18 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
                 <TableCell className="font-medium">{member.full_name}</TableCell>
                 <TableCell>{member.email ?? "—"}</TableCell>
                 <TableCell>
-                  {member.role === "administrador" ? "Admin" : "Médico"}
+                  <select
+                    value={member.role}
+                    disabled={pending}
+                    onChange={(e) =>
+                      changeRole(member, e.target.value as UserRole)
+                    }
+                    className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+                    aria-label={`Rol de ${member.full_name}`}
+                  >
+                    <option value="medico">Médico</option>
+                    <option value="administrador">Administrador</option>
+                  </select>
                 </TableCell>
                 <TableCell>
                   <Badge variant={member.is_active ? "secondary" : "outline"}>
