@@ -31,10 +31,21 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "PrismaApp",
   },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#1a2744",
+  // Requerido para que `env(safe-area-inset-*)` en CSS resuelva a un valor
+  // real (patrón validado en HabitadAPP Fase 0): sin esto el contenido
+  // puede quedar tapado por la barra de gestos del sistema en Android/PWA.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

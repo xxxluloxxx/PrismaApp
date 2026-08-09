@@ -60,5 +60,25 @@ self.addEventListener("fetch", (event) => {
         )
       )
     );
+    return;
+  }
+
+  // Resto de peticiones GET del mismo origen (navegación de páginas, API
+  // routes, etc.): network-first con fallback a caché y, si tampoco hay
+  // caché, a la app shell ("/"). Sin esto, quedarse sin conexión mostraba
+  // el error offline nativo del navegador en vez de la PWA (patrón
+  // validado en HabitadAPP `public/sw.js`).
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+    );
   }
 });
