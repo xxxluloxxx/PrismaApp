@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.quotes (
   created_by uuid REFERENCES public.profiles (id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT quotes_total_check CHECK (abs(total - (subtotal + tax_amount)) < 0.01)
+  CONSTRAINT quotes_total_matches_lines_check CHECK (abs(total - (subtotal + tax_amount)) < 0.01)
 );
 
 CREATE TABLE IF NOT EXISTS public.quote_items (
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.quote_items (
   unit_price numeric(12,2) NOT NULL CHECK (unit_price >= 0),
   line_total numeric(12,2) NOT NULL CHECK (line_total >= 0),
   sort_order int NOT NULL DEFAULT 0,
-  CONSTRAINT quote_items_line_total_check CHECK (abs(line_total - (quantity * unit_price)) < 0.01)
+  CONSTRAINT quote_items_line_total_matches_price_check CHECK (abs(line_total - (quantity * unit_price)) < 0.01)
 );
 
 CREATE TABLE IF NOT EXISTS public.quote_status_history (

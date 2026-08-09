@@ -139,23 +139,38 @@ export async function createQuoteWithItems(
   }
 
   const supabase = await createClient();
+
+  const rows = items.map((item, index) => ({
+    treatment_id: item.treatment_id ?? null,
+    description: item.description,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    sort_order: item.sort_order ?? index,
+  }));
+
+  // create_quote_with_items() inserta cabecera + líneas en una sola
+  // transacción de servidor (RPC SECURITY INVOKER): si las líneas fallan,
+  // Postgres revierte también la cabecera. Evita el presupuesto huérfano
+  // que dejaba el patrón anterior (insert + "rollback" manual con DELETE,
+  // que fallaba en silencio porque quotes no tiene policy de DELETE).
   const { data: quote, error } = await supabase
-    .from("quotes")
-    .insert({
-      patient_id: header.patient_id,
-      doctor_id: header.doctor_id,
-      clinical_record_id: header.clinical_record_id ?? null,
-      issue_date: header.issue_date ?? new Date().toISOString().slice(0, 10),
-      status: header.status ?? "draft",
-      currency: header.currency ?? "USD",
-      subtotal: header.subtotal,
-      tax_rate: header.tax_rate,
-      tax_amount: header.tax_amount,
-      total: header.total,
-      notes: header.notes ?? null,
-      created_by: header.created_by ?? null,
+    .rpc("create_quote_with_items", {
+      p_header: {
+        patient_id: header.patient_id,
+        doctor_id: header.doctor_id,
+        clinical_record_id: header.clinical_record_id ?? null,
+        issue_date: header.issue_date ?? new Date().toISOString().slice(0, 10),
+        status: header.status ?? "draft",
+        currency: header.currency ?? "USD",
+        subtotal: header.subtotal,
+        tax_rate: header.tax_rate,
+        tax_amount: header.tax_amount,
+        total: header.total,
+        notes: header.notes ?? null,
+        created_by: header.created_by ?? null,
+      },
+      p_items: rows,
     })
-    .select("*")
     .single();
 
   if (error || !quote) {
@@ -163,26 +178,6 @@ export async function createQuoteWithItems(
       data: null,
       error: "query_failed",
       message: error?.message ?? "No se pudo crear el presupuesto",
-    };
-  }
-
-  const rows = items.map((item, index) => ({
-    quote_id: quote.id,
-    treatment_id: item.treatment_id ?? null,
-    description: item.description,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    line_total: Math.round(item.quantity * item.unit_price * 100) / 100,
-    sort_order: item.sort_order ?? index,
-  }));
-
-  const { error: itemsError } = await supabase.from("quote_items").insert(rows);
-  if (itemsError) {
-    await supabase.from("quotes").delete().eq("id", quote.id);
-    return {
-      data: null,
-      error: "query_failed",
-      message: itemsError.message,
     };
   }
 
