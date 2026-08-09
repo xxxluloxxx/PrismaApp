@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Menu } from "lucide-react";
+import { useState } from "react";
 
-import { navForProfile } from "@/components/layout/nav-config";
+import { BottomNav } from "@/components/layout/bottom-nav";
+import {
+  drawerNavForProfile,
+  navForProfile,
+  type NavItem,
+} from "@/components/layout/nav-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,32 +26,33 @@ import { isAdmin } from "@/lib/types/profile";
 import { cn } from "@/lib/utils";
 
 function NavLinks({
-  profile,
+  items,
   onNavigate,
 }: {
-  profile: Profile;
+  items: NavItem[];
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const items = navForProfile(profile);
 
   return (
     <nav className="flex flex-col gap-1">
       {items.map((item) => {
         const active =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const Icon = item.icon;
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
             )}
           >
+            <Icon className="size-4" />
             {item.label}
           </Link>
         );
@@ -62,6 +69,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   async function signOut() {
     const supabase = createClient();
@@ -69,6 +77,9 @@ export function AppShell({
     router.push("/login");
     router.refresh();
   }
+
+  const desktopItems = navForProfile(profile);
+  const drawerItems = drawerNavForProfile(profile);
 
   return (
     <div className="flex min-h-full flex-1 bg-background">
@@ -85,7 +96,7 @@ export function AppShell({
           </Badge>
         </div>
         <div className="flex-1 overflow-y-auto p-3">
-          <NavLinks profile={profile} />
+          <NavLinks items={desktopItems} />
         </div>
         <div className="border-t border-sidebar-border p-3">
           <Button
@@ -101,7 +112,7 @@ export function AppShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b px-4 py-3 lg:px-6">
-          <Sheet>
+          <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger
               render={
                 <Button variant="outline" size="icon" className="lg:hidden" />
@@ -112,10 +123,15 @@ export function AppShell({
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <SheetHeader className="border-b px-4 py-4 text-left">
-                <SheetTitle className="font-heading">PrismaApp</SheetTitle>
+                <SheetTitle className="font-heading">
+                  Más opciones
+                </SheetTitle>
               </SheetHeader>
               <div className="p-3">
-                <NavLinks profile={profile} />
+                <NavLinks
+                  items={drawerItems}
+                  onNavigate={() => setDrawerOpen(false)}
+                />
               </div>
             </SheetContent>
           </Sheet>
@@ -131,8 +147,11 @@ export function AppShell({
             {isAdmin(profile) ? "Admin" : "Médico"}
           </Badge>
         </header>
-        <main className="flex flex-1 flex-col p-4 lg:p-6">{children}</main>
+        <main className="flex flex-1 flex-col p-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:p-6 lg:pb-6">
+          {children}
+        </main>
       </div>
+      <BottomNav profile={profile} />
     </div>
   );
 }
