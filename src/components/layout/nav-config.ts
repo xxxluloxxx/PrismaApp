@@ -37,13 +37,18 @@ export const adminNav: NavItem[] = [
     icon: BriefcaseMedical,
     adminOnly: true,
   },
-  {
-    href: "/configuracion",
-    label: "Configuración",
-    icon: Settings,
-    adminOnly: true,
-  },
 ];
+
+/**
+ * "Configuración" vive fuera de primaryNav/adminNav/navForProfile: no es
+ * parte del drawer ni de la barra inferior, solo se accede desde el menú
+ * de usuario (avatar) en el header -- ver `app-shell.tsx`.
+ */
+export const configuracionNav: NavItem = {
+  href: "/configuracion",
+  label: "Configuración",
+  icon: Settings,
+};
 
 export function navForProfile(profile: Profile): NavItem[] {
   const items = [...primaryNav];
@@ -57,18 +62,19 @@ export function navForProfile(profile: Profile): NavItem[] {
  * Ítems primarios de la barra inferior móvil (máx. 5), distintos por rol
  * según el flujo de uso diario: el médico vive en lo clínico (agenda,
  * pacientes, fichas, odontograma); el administrador pesa más lo operativo
- * (pacientes, agenda, equipo, configuración). El resto de la navegación
- * queda en el drawer lateral ("Más opciones").
+ * (pacientes, agenda, equipo, tratamientos). El resto de la navegación
+ * queda en el drawer lateral ("Más opciones"); "Configuración" vive aparte,
+ * en el menú de usuario.
  */
 export function bottomNavForProfile(profile: Profile): NavItem[] {
   const [inicio, pacientes, agenda, fichas, odontograma] = primaryNav;
 
   if (isAdmin(profile)) {
     const equipo = adminNav.find((item) => item.href === "/equipo")!;
-    const configuracion = adminNav.find(
-      (item) => item.href === "/configuracion"
+    const tratamientos = adminNav.find(
+      (item) => item.href === "/tratamientos"
     )!;
-    return [inicio, pacientes, agenda, equipo, configuracion];
+    return [inicio, pacientes, agenda, equipo, tratamientos];
   }
 
   return [inicio, agenda, pacientes, fichas, odontograma];
