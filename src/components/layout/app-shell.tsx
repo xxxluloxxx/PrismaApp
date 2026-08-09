@@ -19,7 +19,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuLinkItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -172,21 +172,21 @@ export function AppShell({
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-normal">
+              <div className="px-1.5 py-1 font-normal">
                 <p className="truncate text-sm font-medium">
                   {profile.full_name}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {isAdmin(profile) ? "Administrador" : "Médico"}
                 </p>
-              </DropdownMenuLabel>
+              </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
+              <DropdownMenuLinkItem
                 render={<Link href={configuracionNav.href} />}
               >
                 <Settings className="size-4" />
                 Configuración
-              </DropdownMenuItem>
+              </DropdownMenuLinkItem>
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => void signOut()}
