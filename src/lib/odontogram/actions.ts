@@ -8,7 +8,7 @@ import {
   upsertToothCondition,
 } from "@/lib/supabase/odontogram";
 import { getCurrentProfile } from "@/lib/supabase/profile";
-import type { ToothCondition } from "@/lib/types/odontogram";
+import type { ToothCondition, ToothSurface } from "@/lib/types/odontogram";
 
 export type ActionResult =
   | { ok: true; id: string }
@@ -52,6 +52,7 @@ export async function upsertToothConditionAction(input: {
   odontogram_id: string;
   tooth_code: string;
   condition: ToothCondition;
+  surface: ToothSurface;
   notes?: string | null;
 }): Promise<ActionResult> {
   const profile = await getCurrentProfile();

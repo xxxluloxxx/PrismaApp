@@ -14,6 +14,30 @@ export type ToothCondition =
 
 export type ChartType = "adulto" | "pediatrico";
 
+/**
+ * Cara dental. 'total' es una pseudo-superficie usada para condiciones que
+ * aplican a toda la pieza (ausente, extraccion_indicada, implante, protesis)
+ * en vez de a una cara específica.
+ */
+export type ToothSurface = "M" | "D" | "O" | "V" | "L" | "total";
+
+/** Condiciones que sólo tiene sentido aplicar a la pieza completa. */
+export const WHOLE_TOOTH_CONDITIONS: ReadonlySet<ToothCondition> = new Set([
+  "ausente",
+  "extraccion_indicada",
+  "implante",
+  "protesis",
+]);
+
+export const TOOTH_SURFACE_LABELS: Record<ToothSurface, string> = {
+  M: "Mesial",
+  D: "Distal",
+  O: "Oclusal / Incisal",
+  V: "Vestibular",
+  L: "Lingual / Palatino",
+  total: "Toda la pieza",
+};
+
 export type Odontogram = {
   id: string;
   patient_id: string;
@@ -29,7 +53,7 @@ export type OdontogramTooth = {
   id: string;
   odontogram_id: string;
   tooth_code: string;
-  surfaces: string[];
+  surface: ToothSurface;
   condition: ToothCondition;
   notes: string | null;
 };
@@ -76,6 +100,32 @@ export const TOOTH_CONDITION_COLORS: Record<ToothCondition, string> = {
   sellante: "bg-lime-100 text-lime-900 border-lime-300",
   otro: "bg-muted text-foreground border-border",
 };
+
+/**
+ * Colores hex por condición para rellenos de SVG (las regiones del
+ * odontograma). Alineados con TOOTH_CONDITION_COLORS pero en formato
+ * fill/stroke utilizables directamente en atributos SVG.
+ */
+export const TOOTH_CONDITION_FILL: Record<
+  ToothCondition,
+  { fill: string; stroke: string }
+> = {
+  sano: { fill: "#d1fae5", stroke: "#6ee7b7" },
+  caries: { fill: "#fecaca", stroke: "#f87171" },
+  obturacion: { fill: "#bae6fd", stroke: "#38bdf8" },
+  corona: { fill: "#fde68a", stroke: "#fbbf24" },
+  endodoncia: { fill: "#ddd6fe", stroke: "#a78bfa" },
+  ausente: { fill: "#d4d4d8", stroke: "#a1a1aa" },
+  extraccion_indicada: { fill: "#fed7aa", stroke: "#fb923c" },
+  implante: { fill: "#99f6e4", stroke: "#2dd4bf" },
+  protesis: { fill: "#c7d2fe", stroke: "#818cf8" },
+  fractura: { fill: "#fecdd3", stroke: "#fb7185" },
+  sellante: { fill: "#d9f99d", stroke: "#a3e635" },
+  otro: { fill: "#e4e4e7", stroke: "#a1a1aa" },
+};
+
+/** Relleno/borde neutro para una cara sin condición registrada. */
+export const TOOTH_SURFACE_EMPTY_FILL = { fill: "#f8fafc", stroke: "#cbd5e1" };
 
 /** FDI adult permanent dentition, display order per quadrant row. */
 export const FDI_ADULT_UPPER = [

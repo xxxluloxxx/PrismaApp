@@ -5,6 +5,7 @@ import type {
   OdontogramTooth,
   OdontogramWithNames,
   ToothCondition,
+  ToothSurface,
 } from "@/lib/types/odontogram";
 
 type ListResult =
@@ -130,14 +131,14 @@ export async function createOdontogram(
     if (previous?.id) {
       const { data: prevTeeth } = await supabase
         .from("odontogram_teeth")
-        .select("tooth_code, surfaces, condition, notes")
+        .select("tooth_code, surface, condition, notes")
         .eq("odontogram_id", previous.id);
 
       if (prevTeeth && prevTeeth.length > 0) {
         const rows = prevTeeth.map((t) => ({
           odontogram_id: chart.id,
           tooth_code: t.tooth_code,
-          surfaces: t.surfaces ?? [],
+          surface: t.surface,
           condition: t.condition,
           notes: t.notes ?? null,
         }));
@@ -153,7 +154,7 @@ export async function upsertToothCondition(input: {
   odontogram_id: string;
   tooth_code: string;
   condition: ToothCondition;
-  surfaces?: string[];
+  surface: ToothSurface;
   notes?: string | null;
 }): Promise<
   | { data: OdontogramTooth; error: null }
@@ -167,10 +168,10 @@ export async function upsertToothCondition(input: {
         odontogram_id: input.odontogram_id,
         tooth_code: input.tooth_code,
         condition: input.condition,
-        surfaces: input.surfaces ?? [],
+        surface: input.surface,
         notes: input.notes ?? null,
       },
-      { onConflict: "odontogram_id,tooth_code" }
+      { onConflict: "odontogram_id,tooth_code,surface" }
     )
     .select("*")
     .single();
