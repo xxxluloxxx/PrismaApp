@@ -1,4 +1,4 @@
-const CACHE_NAME = "prismaapp-static-v1";
+const CACHE_NAME = "prismaapp-static-v2";
 const PRECACHE_URLS = ["/", "/manifest.json", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -63,22 +63,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Resto de peticiones GET del mismo origen (navegación de páginas, API
-  // routes, etc.): network-first con fallback a caché y, si tampoco hay
-  // caché, a la app shell ("/"). Sin esto, quedarse sin conexión mostraba
-  // el error offline nativo del navegador en vez de la PWA (patrón
-  // validado en HabitadAPP `public/sw.js`).
+  // Peticiones de navegación (carga de documento HTML, incluida la que
+  // dispara `window.location.reload()` en `service-worker-register.tsx`
+  // al activarse una versión nueva del SW): se dejan pasar sin interceptar.
+  // Interceptarlas con `fetch(request)` reproducido aquí puede chocar con
+  // las redirecciones de autenticación del middleware/proxy (login,
+  // guards por rol) y con los fetches RSC de Next.js, causando que la
+  // recarga automática post-actualización falle con un error de conexión
+  // en vez de simplemente recargar. Los assets (íconos/manifest/estáticos)
+  // ya se sirven cacheados arriba; el resto de rutas/API GET del mismo
+  // origen no se cachean por ahora — prioridad es no romper la navegación.
+  if (request.mode === "navigate") return;
+
   if (url.origin === self.location.origin) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+      fetch(request).catch(() => caches.match("/"))
     );
   }
 });
