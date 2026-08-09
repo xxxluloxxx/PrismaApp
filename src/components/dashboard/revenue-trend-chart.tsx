@@ -17,15 +17,21 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function RevenueTrendChart({
-  data,
-  currencyFormatter,
-}: {
-  data: RevenueTrendPoint[];
-  currencyFormatter: Intl.NumberFormat;
-}) {
+// Instanciado en el cliente: un Intl.NumberFormat no se puede pasar como
+// prop desde un Server Component (no es un objeto plano serializable).
+const currencyFormatter = new Intl.NumberFormat("es-EC", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-[180px] w-full">
+    <ChartContainer
+      config={chartConfig}
+      className="aspect-auto w-full"
+      style={{ height: 180 }}
+    >
       <AreaChart data={data} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
         <defs>
           <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">

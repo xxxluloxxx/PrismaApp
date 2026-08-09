@@ -236,10 +236,7 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 {revenueTrend && hasTrendData ? (
-                  <RevenueTrendChart
-                    data={revenueTrend}
-                    currencyFormatter={currencyFormatter}
-                  />
+                  <RevenueTrendChart data={revenueTrend} />
                 ) : (
                   <div className="flex h-[180px] items-center justify-center text-center text-sm text-muted-foreground">
                     Aún no hay suficientes datos de pagos para mostrar una
@@ -260,10 +257,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               {hasTreatments && topTreatments ? (
-                <TopTreatmentsChart
-                  data={topTreatments}
-                  currencyFormatter={currencyFormatter}
-                />
+                <TopTreatmentsChart data={topTreatments} />
               ) : (
                 <div className="flex h-24 items-center justify-center text-center text-sm text-muted-foreground">
                   Aún no hay suficientes datos. Cuando se generen

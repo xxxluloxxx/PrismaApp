@@ -17,13 +17,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TopTreatmentsChart({
-  data,
-  currencyFormatter,
-}: {
-  data: TopTreatment[];
-  currencyFormatter: Intl.NumberFormat;
-}) {
+// Instanciado en el cliente: un Intl.NumberFormat no se puede pasar como
+// prop desde un Server Component (no es un objeto plano serializable).
+const currencyFormatter = new Intl.NumberFormat("es-EC", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+export function TopTreatmentsChart({ data }: { data: TopTreatment[] }) {
   return (
     <ChartContainer
       config={chartConfig}
