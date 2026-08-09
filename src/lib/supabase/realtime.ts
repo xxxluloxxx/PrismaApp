@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
 
-/** Suscripción simple: refresca la ruta al cambiar filas (respeta RLS). */
-export function useRealtimeRefresh(table: string, enabled = true) {
+/**
+ * Suscripción simple: refresca la ruta al cambiar filas (respeta RLS).
+ * `onChange` es opcional y se dispara además de `router.refresh()` — útil para
+ * vistas con datos client-side (ej. calendario) que no dependen del árbol de
+ * Server Components y necesitan volver a pedir su propio rango.
+ */
+export function useRealtimeRefresh(
+  table: string,
+  enabled = true,
+  onChange?: () => void
+) {
   const router = useRouter();
 
   useEffect(() => {
@@ -25,7 +34,10 @@ export function useRealtimeRefresh(table: string, enabled = true) {
           "postgres_changes",
           { event: "*", schema: "public", table },
           () => {
-            if (!cancelled) router.refresh();
+            if (!cancelled) {
+              router.refresh();
+              onChange?.();
+            }
           }
         )
         .subscribe();
@@ -39,5 +51,6 @@ export function useRealtimeRefresh(table: string, enabled = true) {
         void supabase.removeChannel(channel);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table, enabled, router]);
 }
