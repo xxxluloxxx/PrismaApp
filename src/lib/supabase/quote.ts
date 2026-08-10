@@ -184,6 +184,51 @@ export async function createQuoteWithItems(
   return { data: quote as Quote, error: null };
 }
 
+export async function updateQuoteItems(
+  quoteId: string,
+  items: QuoteItemInput[]
+): Promise<MutateResult> {
+  if (items.length === 0) {
+    return {
+      data: null,
+      error: "query_failed",
+      message: "El presupuesto necesita al menos una línea",
+    };
+  }
+
+  const supabase = await createClient();
+
+  const rows = items.map((item, index) => ({
+    treatment_id: item.treatment_id ?? null,
+    description: item.description,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    sort_order: item.sort_order ?? index,
+  }));
+
+  // update_quote_items() (migración 0012) borra e inserta las líneas y
+  // recalcula subtotal/tax_amount/total en una sola transacción de
+  // servidor (RPC SECURITY INVOKER), con el mismo patrón que
+  // create_quote_with_items(). Valida server-side que el presupuesto no
+  // tenga pagos: no confiamos solo en que la UI oculte el botón de editar.
+  const { data: quote, error } = await supabase
+    .rpc("update_quote_items", {
+      p_quote_id: quoteId,
+      p_items: rows,
+    })
+    .single();
+
+  if (error || !quote) {
+    return {
+      data: null,
+      error: "query_failed",
+      message: error?.message ?? "No se pudieron actualizar las líneas",
+    };
+  }
+
+  return { data: quote as Quote, error: null };
+}
+
 export async function updateQuoteStatus(
   id: string,
   status: QuoteStatus

@@ -6,13 +6,14 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { createPaymentAction } from "@/lib/payments/actions";
-import { updateQuoteStatusAction } from "@/lib/quotes/actions";
+import { updateQuoteItemsAction, updateQuoteStatusAction } from "@/lib/quotes/actions";
 import type { Payment, QuoteWithNames } from "@/lib/types/quote";
 import {
   PAYMENT_METHOD_LABELS,
   QUOTE_STATUS_LABELS,
   type PaymentMethod,
 } from "@/lib/types/quote";
+import type { Treatment } from "@/lib/types/treatment";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -32,28 +33,33 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-
-function money(n: number, currency = "USD") {
-  return new Intl.NumberFormat("es-EC", {
-    style: "currency",
-    currency,
-  }).format(n);
-}
+import {
+  computeQuoteTotals,
+  linesToItems,
+  money,
+  newQuoteLine,
+  QuoteItemsEditor,
+  type QuoteLine,
+} from "@/components/presupuestos/quote-items-editor";
 
 const METHODS = Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[];
 
 export function QuoteDetail({
   quote,
   payments,
+  treatments,
 }: {
   quote: QuoteWithNames;
   payments: Payment[];
+  treatments: Treatment[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [reference, setReference] = useState("");
+  const [editingItems, setEditingItems] = useState(false);
+  const [lines, setLines] = useState<QuoteLine[]>([]);
 
   const paid = quote.paid_amount ?? 0;
   const balance = Math.round((quote.total - paid) * 100) / 100;
@@ -62,6 +68,48 @@ export function QuoteDetail({
     quote.status !== "cancelled" &&
     quote.status !== "paid" &&
     balance > 0;
+
+  const canEditItems =
+    paid === 0 && (quote.status === "draft" || quote.status === "pending");
+
+  const { subtotal, taxAmount, total } = computeQuoteTotals(
+    lines,
+    quote.tax_rate
+  );
+
+  function startEditingItems() {
+    const initial = (quote.items ?? []).map((item) => ({
+      key: item.id,
+      treatment_id: item.treatment_id ?? "",
+      description: item.description,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+    }));
+    setLines(initial.length ? initial : [newQuoteLine()]);
+    setEditingItems(true);
+  }
+
+  function cancelEditingItems() {
+    setEditingItems(false);
+  }
+
+  function saveItems() {
+    const items = linesToItems(lines);
+    if (!items.length) {
+      toast.error("Agrega al menos una línea válida");
+      return;
+    }
+    startTransition(async () => {
+      const result = await updateQuoteItemsAction(quote.id, items);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+      toast.success("Líneas actualizadas");
+      setEditingItems(false);
+      router.refresh();
+    });
+  }
 
   function changeStatus(status: "pending" | "cancelled") {
     startTransition(async () => {
@@ -186,44 +234,112 @@ export function QuoteDetail({
       </Card>
 
       <div>
-        <h2 className="mb-3 font-heading text-xl font-semibold">Líneas</h2>
-        <div className="overflow-x-auto rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Descripción</TableHead>
-                <TableHead className="text-right">Cant.</TableHead>
-                <TableHead className="text-right">P. unit.</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(quote.items ?? []).length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-center text-muted-foreground"
-                  >
-                    Sin líneas
-                  </TableCell>
-                </TableRow>
-              ) : (
-                (quote.items ?? []).map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">
-                      {money(item.unit_price, quote.currency)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {money(item.line_total, quote.currency)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-heading text-xl font-semibold">Líneas</h2>
+          {editingItems ? (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={cancelEditingItems}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={pending}
+                onClick={saveItems}
+              >
+                {pending ? "Guardando…" : "Guardar líneas"}
+              </Button>
+            </div>
+          ) : canEditItems ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={startEditingItems}
+            >
+              Editar líneas
+            </Button>
+          ) : null}
         </div>
+
+        {editingItems ? (
+          <div className="flex flex-col gap-3">
+            <QuoteItemsEditor
+              lines={lines}
+              onLinesChange={setLines}
+              treatments={treatments}
+              disabled={pending}
+            />
+            <div className="rounded-xl border bg-muted/30 p-4 text-sm">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{money(subtotal, quote.currency)}</span>
+              </div>
+              <div className="mt-1 flex justify-between text-muted-foreground">
+                <span>IVA ({(quote.tax_rate * 100).toFixed(0)}%)</span>
+                <span>{money(taxAmount, quote.currency)}</span>
+              </div>
+              <div className="mt-2 flex justify-between text-base font-semibold">
+                <span>Total</span>
+                <span>{money(total, quote.currency)}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto rounded-xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Descripción</TableHead>
+                    <TableHead className="text-right">Cant.</TableHead>
+                    <TableHead className="text-right">P. unit.</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(quote.items ?? []).length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="text-center text-muted-foreground"
+                      >
+                        Sin líneas
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    (quote.items ?? []).map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.description}</TableCell>
+                        <TableCell className="text-right">
+                          {item.quantity}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {money(item.unit_price, quote.currency)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {money(item.line_total, quote.currency)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            {!canEditItems && paid > 0 ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Las líneas no se pueden modificar porque este presupuesto ya
+                tiene pagos registrados.
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
 
       <div>
