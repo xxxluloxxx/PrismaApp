@@ -42,7 +42,7 @@ function mapQuote(row: Record<string, unknown>): QuoteWithNames {
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
     patient_name: patient
-      ? `${patient.last_name ?? ""}, ${patient.first_name ?? ""}`.trim()
+      ? `${patient.first_name ?? ""} ${patient.last_name ?? ""}`.trim()
       : "—",
     doctor_name: doctor?.full_name ?? "—",
   };

@@ -70,14 +70,14 @@ export function ClinicalRecordForm({
               <SelectValue placeholder="Seleccionar…">
                 {(value: string) => {
                   const p = patients.find((x) => x.id === value);
-                  return p ? `${p.last_name}, ${p.first_name}` : value;
+                  return p ? `${p.first_name} ${p.last_name}` : value;
                 }}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {patients.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
-                  {p.last_name}, {p.first_name}
+                  {p.first_name} {p.last_name}
                 </SelectItem>
               ))}
             </SelectContent>
