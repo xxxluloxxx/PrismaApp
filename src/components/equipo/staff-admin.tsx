@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -18,6 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  medico: "Médico",
+  administrador: "Administrador",
+};
 
 export function StaffAdmin({ staff }: { staff: Profile[] }) {
   const router = useRouter();
@@ -130,16 +136,17 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="role">Rol</Label>
-            <select
-              id="role"
-              name="role"
-              defaultValue="medico"
-              disabled={pending}
-              className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
-            >
-              <option value="medico">Médico</option>
-              <option value="administrador">Administrador</option>
-            </select>
+            <Select name="role" defaultValue="medico" disabled={pending}>
+              <SelectTrigger id="role" size="sm" className="w-full">
+                <SelectValue>
+                  {(value: UserRole) => ROLE_LABELS[value]}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="medico">Médico</SelectItem>
+                <SelectItem value="administrador">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="specialty">Especialidad</Label>
@@ -174,18 +181,24 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
                 <TableCell className="font-medium">{member.full_name}</TableCell>
                 <TableCell>{member.email ?? "—"}</TableCell>
                 <TableCell>
-                  <select
+                  <Select
                     value={member.role}
+                    onValueChange={(v) => changeRole(member, v as UserRole)}
                     disabled={pending}
-                    onChange={(e) =>
-                      changeRole(member, e.target.value as UserRole)
-                    }
-                    className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
-                    aria-label={`Rol de ${member.full_name}`}
                   >
-                    <option value="medico">Médico</option>
-                    <option value="administrador">Administrador</option>
-                  </select>
+                    <SelectTrigger
+                      size="sm"
+                      aria-label={`Rol de ${member.full_name}`}
+                    >
+                      <SelectValue>
+                        {(value: UserRole) => ROLE_LABELS[value]}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="medico">Médico</SelectItem>
+                      <SelectItem value="administrador">Administrador</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 <TableCell>
                   <Badge variant={member.is_active ? "secondary" : "outline"}>

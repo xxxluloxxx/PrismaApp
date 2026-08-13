@@ -14,6 +14,7 @@ import { SEX_LABELS } from "@/lib/types/patient";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ export function PatientForm({ patient }: Props) {
     const form = new FormData(event.currentTarget);
 
     const sexRaw = String(form.get("sex") ?? "");
-    const sex = sexRaw === "" ? null : (sexRaw as PatientSex);
+    const sex = sexRaw === "" || sexRaw === "__unspecified__" ? null : (sexRaw as PatientSex);
 
     const payload = {
       document_id: String(form.get("document_id") ?? "").trim(),
@@ -127,20 +128,27 @@ export function PatientForm({ patient }: Props) {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sex">Sexo</Label>
-          <select
-            id="sex"
+          <Select
             name="sex"
-            defaultValue={patient?.sex ?? ""}
+            defaultValue={patient?.sex ?? "__unspecified__"}
             disabled={pending}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
           >
-            <option value="">—</option>
-            {(Object.keys(SEX_LABELS) as PatientSex[]).map((key) => (
-              <option key={key} value={key}>
-                {SEX_LABELS[key]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="sex" size="sm" className="w-full">
+              <SelectValue>
+                {(value: PatientSex | "__unspecified__") =>
+                  value === "__unspecified__" ? "—" : SEX_LABELS[value]
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__unspecified__">—</SelectItem>
+              {(Object.keys(SEX_LABELS) as PatientSex[]).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {SEX_LABELS[key]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="phone">Teléfono</Label>

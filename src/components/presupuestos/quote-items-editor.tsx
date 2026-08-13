@@ -4,6 +4,7 @@ import type { Treatment } from "@/lib/types/treatment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type QuoteLine = {
   key: string;
@@ -105,19 +106,31 @@ export function QuoteItemsEditor({
         >
           <div className="flex flex-col gap-1 sm:col-span-4">
             <Label>Tratamiento</Label>
-            <select
-              value={line.treatment_id}
+            <Select
+              value={line.treatment_id || "__manual__"}
+              onValueChange={(v) =>
+                onTreatmentChange(line.key, !v || v === "__manual__" ? "" : v)
+              }
               disabled={disabled}
-              onChange={(e) => onTreatmentChange(line.key, e.target.value)}
-              className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
             >
-              <option value="">Manual / elegir…</option>
-              {treatments.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.code} — {t.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger size="sm" className="w-full">
+                <SelectValue>
+                  {(value: string) => {
+                    if (value === "__manual__") return "Manual / elegir…";
+                    const t = treatments.find((x) => x.id === value);
+                    return t ? `${t.code} — ${t.name}` : value;
+                  }}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__manual__">Manual / elegir…</SelectItem>
+                {treatments.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.code} — {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1 sm:col-span-4">
             <Label>Descripción</Label>

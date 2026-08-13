@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export function ClinicalRecordDetail({
@@ -106,21 +107,26 @@ export function ClinicalRecordDetail({
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="image_type">Tipo</Label>
-              <select
-                id="image_type"
+              <Select
                 name="image_type"
                 defaultValue="radiografia"
                 disabled={pending}
-                className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
-                {(Object.keys(CLINICAL_IMAGE_TYPE_LABELS) as ClinicalImageType[]).map(
-                  (key) => (
-                    <option key={key} value={key}>
-                      {CLINICAL_IMAGE_TYPE_LABELS[key]}
-                    </option>
-                  )
-                )}
-              </select>
+                <SelectTrigger id="image_type" size="sm" className="w-full">
+                  <SelectValue>
+                    {(value: ClinicalImageType) => CLINICAL_IMAGE_TYPE_LABELS[value]}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(CLINICAL_IMAGE_TYPE_LABELS) as ClinicalImageType[]).map(
+                    (key) => (
+                      <SelectItem key={key} value={key}>
+                        {CLINICAL_IMAGE_TYPE_LABELS[key]}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="caption">Descripción</Label>

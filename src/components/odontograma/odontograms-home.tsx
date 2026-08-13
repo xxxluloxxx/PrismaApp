@@ -10,6 +10,7 @@ import type { OdontogramWithNames } from "@/lib/types/odontogram";
 import type { Patient } from "@/lib/types/patient";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -70,20 +71,27 @@ export function OdontogramsHome({
       <div className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-end">
         <div className="flex flex-1 flex-col gap-2">
           <Label htmlFor="patient_id">Paciente</Label>
-          <select
-            id="patient_id"
-            value={patientId}
+          <Select
+            value={patientId || undefined}
+            onValueChange={(v) => setPatientId(v ?? "")}
             disabled={pending}
-            onChange={(e) => setPatientId(e.target.value)}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
           >
-            <option value="">Seleccionar…</option>
-            {patients.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.last_name}, {p.first_name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="patient_id" size="sm" className="w-full">
+              <SelectValue placeholder="Seleccionar…">
+                {(value: string) => {
+                  const p = patients.find((x) => x.id === value);
+                  return p ? `${p.last_name}, ${p.first_name}` : value;
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {patients.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.last_name}, {p.first_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input

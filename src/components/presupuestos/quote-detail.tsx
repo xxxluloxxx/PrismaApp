@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -366,19 +367,24 @@ export function QuoteDetail({
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="method">Método</Label>
-              <select
-                id="method"
+              <Select
                 value={method}
+                onValueChange={(v) => setMethod(v as PaymentMethod)}
                 disabled={pending}
-                onChange={(e) => setMethod(e.target.value as PaymentMethod)}
-                className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
-                {METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {PAYMENT_METHOD_LABELS[m]}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="method" size="sm" className="w-full">
+                  <SelectValue>
+                    {(value: PaymentMethod) => PAYMENT_METHOD_LABELS[value]}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {METHODS.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {PAYMENT_METHOD_LABELS[m]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reference">Referencia</Label>

@@ -19,6 +19,7 @@ import {
 } from "@/lib/types/odontogram";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { ToothDiagram } from "@/components/odontograma/tooth-diagram";
 
@@ -164,19 +165,24 @@ export function OdontogramChart({
         </div>
         <div className="flex flex-1 flex-col gap-2">
           <Label htmlFor="condition">Condición</Label>
-          <select
-            id="condition"
+          <Select
             value={condition}
+            onValueChange={(v) => setCondition(v as ToothCondition)}
             disabled={pending}
-            onChange={(e) => setCondition(e.target.value as ToothCondition)}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
           >
-            {availableConditions.map((c) => (
-              <option key={c} value={c}>
-                {TOOTH_CONDITION_LABELS[c]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="condition" size="sm" className="w-full">
+              <SelectValue>
+                {(value: ToothCondition) => TOOTH_CONDITION_LABELS[value]}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {availableConditions.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {TOOTH_CONDITION_LABELS[c]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Button type="button" disabled={pending || !selected} onClick={saveTooth}>
           {pending ? "Guardando…" : "Guardar cara"}

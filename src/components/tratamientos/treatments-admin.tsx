@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -102,19 +103,24 @@ export function TreatmentsAdmin({ treatments }: { treatments: Treatment[] }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="category">Categoría</Label>
-            <select
-              id="category"
+            <Select
               name="category"
-              className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
-              disabled={pending}
               defaultValue="preventivo"
+              disabled={pending}
             >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {TREATMENT_CATEGORY_LABELS[c]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="category" size="sm" className="w-full">
+                <SelectValue>
+                  {(value: TreatmentCategory) => TREATMENT_CATEGORY_LABELS[value]}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {TREATMENT_CATEGORY_LABELS[c]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="price">Precio</Label>

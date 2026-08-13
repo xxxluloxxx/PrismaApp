@@ -11,6 +11,7 @@ import type { Patient } from "@/lib/types/patient";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -69,38 +70,48 @@ export function AppointmentForm({
     <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-xl flex-col gap-4">
       <div className="flex flex-col gap-2">
         <Label htmlFor="patient_id">Paciente</Label>
-        <select
-          id="patient_id"
-          name="patient_id"
-          required
-          disabled={pending}
-          className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
-        >
-          <option value="">Seleccionar…</option>
-          {patients.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.last_name}, {p.first_name} — {p.document_id}
-            </option>
-          ))}
-        </select>
+        <Select name="patient_id" required disabled={pending}>
+          <SelectTrigger id="patient_id" size="sm" className="w-full">
+            <SelectValue placeholder="Seleccionar…">
+              {(value: string) => {
+                const p = patients.find((x) => x.id === value);
+                return p ? `${p.last_name}, ${p.first_name} — ${p.document_id}` : value;
+              }}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {patients.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.last_name}, {p.first_name} — {p.document_id}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="doctor_id">Médico</Label>
-        <select
-          id="doctor_id"
+        <Select
           name="doctor_id"
           required
-          defaultValue={defaultDoctorId ?? ""}
+          defaultValue={defaultDoctorId}
           disabled={pending}
-          className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
         >
-          <option value="">Seleccionar…</option>
-          {doctors.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.full_name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="doctor_id" size="sm" className="w-full">
+            <SelectValue placeholder="Seleccionar…">
+              {(value: string) => {
+                const d = doctors.find((x) => x.id === value);
+                return d ? d.full_name : value;
+              }}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {doctors.map((d) => (
+              <SelectItem key={d.id} value={d.id}>
+                {d.full_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="flex flex-col gap-2">

@@ -52,6 +52,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: oklch(0.985 0.008 220);
   --foreground: oklch(0.22 0.03 255);
   --card: oklch(0.995 0.004 220);
@@ -87,6 +88,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.17 0.025 255);
   --foreground: oklch(0.96 0.01 200);
   --card: oklch(0.22 0.03 255);
@@ -129,6 +131,10 @@
   }
   html {
     @apply font-sans;
+  }
+  select option {
+    background-color: var(--background);
+    color: var(--foreground);
   }
   .font-heading {
     font-family: var(--font-heading);
