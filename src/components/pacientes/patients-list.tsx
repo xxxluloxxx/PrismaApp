@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { Patient } from "@/lib/types/patient";
 import { Badge } from "@/components/ui/badge";
@@ -30,14 +30,22 @@ export function PatientsList({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(initialSearch);
+  const isFirstRender = useRef(true);
 
-  function applyFilters(event: React.FormEvent) {
-    event.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (search.trim()) params.set("q", search.trim());
-    else params.delete("q");
-    router.push(`/pacientes?${params.toString()}`);
-  }
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    const timeout = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (search.trim()) params.set("q", search.trim());
+      else params.delete("q");
+      router.push(`/pacientes?${params.toString()}`);
+    }, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   function toggleInactive() {
     const params = new URLSearchParams(searchParams.toString());
@@ -62,20 +70,17 @@ export function PatientsList({
         </Link>
       </div>
 
-      <form onSubmit={applyFilters} className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por nombre, documento o teléfono"
           className="max-w-md"
         />
-        <Button type="submit" variant="secondary">
-          Buscar
-        </Button>
         <Button type="button" variant="outline" onClick={toggleInactive}>
           {showInactive ? "Solo activos" : "Incluir inactivos"}
         </Button>
-      </form>
+      </div>
 
       <div className="overflow-x-auto rounded-xl border">
         <Table>
@@ -102,7 +107,7 @@ export function PatientsList({
                       href={`/pacientes/${p.id}`}
                       className="font-medium hover:underline"
                     >
-                      {p.last_name}, {p.first_name}
+                      {p.first_name} {p.last_name}
                     </Link>
                   </TableCell>
                   <TableCell>{p.document_id}</TableCell>
