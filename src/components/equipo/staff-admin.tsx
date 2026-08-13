@@ -201,7 +201,7 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={member.is_active ? "secondary" : "outline"}>
+                  <Badge variant={member.is_active ? "success" : "destructive"}>
                     {member.is_active ? "Activo" : "Inactivo"}
                   </Badge>
                 </TableCell>

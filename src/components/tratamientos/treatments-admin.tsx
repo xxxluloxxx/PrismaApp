@@ -185,7 +185,7 @@ export function TreatmentsAdmin({ treatments }: { treatments: Treatment[] }) {
                   </TableCell>
                   <TableCell>${Number(t.price).toFixed(2)}</TableCell>
                   <TableCell>
-                    <Badge variant={t.is_active ? "secondary" : "outline"}>
+                    <Badge variant={t.is_active ? "success" : "destructive"}>
                       {t.is_active ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>

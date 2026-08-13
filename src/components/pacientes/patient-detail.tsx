@@ -51,7 +51,7 @@ export function PatientDetail({ patient }: { patient: Patient }) {
             CI/Doc: {patient.document_id}
           </p>
           <div className="mt-2">
-            <Badge variant={patient.is_active ? "secondary" : "outline"}>
+            <Badge variant={patient.is_active ? "success" : "destructive"}>
               {patient.is_active ? "Activo" : "Inactivo"}
             </Badge>
           </div>

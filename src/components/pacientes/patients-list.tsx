@@ -113,7 +113,7 @@ export function PatientsList({
                   <TableCell>{p.document_id}</TableCell>
                   <TableCell>{p.phone}</TableCell>
                   <TableCell>
-                    <Badge variant={p.is_active ? "secondary" : "outline"}>
+                    <Badge variant={p.is_active ? "success" : "destructive"}>
                       {p.is_active ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
