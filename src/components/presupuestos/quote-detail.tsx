@@ -6,7 +6,11 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { createPaymentAction } from "@/lib/payments/actions";
-import { updateQuoteItemsAction, updateQuoteStatusAction } from "@/lib/quotes/actions";
+import {
+  toggleQuoteItemDoneAction,
+  updateQuoteItemsAction,
+  updateQuoteStatusAction,
+} from "@/lib/quotes/actions";
 import type { Payment, QuoteWithNames } from "@/lib/types/quote";
 import {
   PAYMENT_METHOD_LABELS,
@@ -42,6 +46,7 @@ import {
   QuoteItemsEditor,
   type QuoteLine,
 } from "@/components/presupuestos/quote-items-editor";
+import { QuotePdfActions } from "@/components/presupuestos/quote-pdf-actions";
 
 const METHODS = Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[];
 
@@ -126,6 +131,20 @@ export function QuoteDetail({
     });
   }
 
+  function toggleItemDone(itemId: string, done: boolean) {
+    startTransition(async () => {
+      const result = await toggleQuoteItemDoneAction(itemId, done, quote.id);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+      toast.success(
+        done ? "Línea marcada como hecha" : "Línea marcada como pendiente"
+      );
+      router.refresh();
+    });
+  }
+
   function recordPayment(event: React.FormEvent) {
     event.preventDefault();
     const value = Number(amount);
@@ -181,6 +200,14 @@ export function QuoteDetail({
               Cancelar
             </Button>
           ) : null}
+          <QuotePdfActions
+            quoteId={quote.id}
+            patientName={quote.patient_name}
+            patientPhone={quote.patient_phone}
+            total={quote.total}
+            currency={quote.currency}
+            status={quote.status}
+          />
           <Link
             href="/presupuestos"
             className={cn(buttonVariants({ variant: "ghost" }))}
@@ -302,13 +329,14 @@ export function QuoteDetail({
                     <TableHead className="text-right">Cant.</TableHead>
                     <TableHead className="text-right">P. unit.</TableHead>
                     <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-center">Hecho</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {(quote.items ?? []).length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={4}
+                        colSpan={5}
                         className="text-center text-muted-foreground"
                       >
                         Sin líneas
@@ -326,6 +354,18 @@ export function QuoteDetail({
                         </TableCell>
                         <TableCell className="text-right">
                           {money(item.line_total, quote.currency)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <input
+                            type="checkbox"
+                            checked={item.done}
+                            disabled={pending}
+                            aria-label={`Marcar ${item.description} como hecho`}
+                            className="size-4 rounded border-border accent-primary"
+                            onChange={(event) =>
+                              toggleItemDone(item.id, event.target.checked)
+                            }
+                          />
                         </TableCell>
                       </TableRow>
                     ))

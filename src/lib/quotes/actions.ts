@@ -6,6 +6,7 @@ import { getClinicSettings } from "@/lib/supabase/clinic-settings";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import {
   createQuoteWithItems,
+  setQuoteItemDone,
   updateQuoteItems,
   updateQuoteStatus,
 } from "@/lib/supabase/quote";
@@ -119,6 +120,30 @@ export async function updateQuoteStatusAction(
 
   revalidatePath("/presupuestos");
   revalidatePath(`/presupuestos/${id}`);
+  revalidatePath("/dashboard");
+  return { ok: true, id: result.data.id };
+}
+
+export async function toggleQuoteItemDoneAction(
+  itemId: string,
+  done: boolean,
+  quoteId: string
+): Promise<ActionResult> {
+  const profile = await getCurrentProfile();
+  if (profile.error || !profile.profile) {
+    return { ok: false, message: "No autenticado" };
+  }
+
+  const result = await setQuoteItemDone(itemId, done);
+  if (result.error || !result.data) {
+    return {
+      ok: false,
+      message: result.message ?? "No se pudo actualizar el estado de la línea",
+    };
+  }
+
+  revalidatePath("/presupuestos");
+  revalidatePath(`/presupuestos/${quoteId}`);
   revalidatePath("/dashboard");
   return { ok: true, id: result.data.id };
 }

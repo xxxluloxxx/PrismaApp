@@ -34,10 +34,12 @@ export type QuoteItem = {
   unit_price: number;
   line_total: number;
   sort_order: number;
+  done: boolean;
 };
 
 export type QuoteWithNames = Quote & {
   patient_name: string;
+  patient_phone: string | null;
   doctor_name: string;
   items?: QuoteItem[];
   paid_amount?: number;

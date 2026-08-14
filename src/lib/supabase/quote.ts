@@ -22,7 +22,7 @@ type MutateResult =
 
 function mapQuote(row: Record<string, unknown>): QuoteWithNames {
   const patient = row.patient as
-    | { first_name?: string; last_name?: string }
+    | { first_name?: string; last_name?: string; phone?: string | null }
     | null;
   const doctor = row.doctor as { full_name?: string } | null;
   return {
@@ -44,6 +44,7 @@ function mapQuote(row: Record<string, unknown>): QuoteWithNames {
     patient_name: patient
       ? `${patient.first_name ?? ""} ${patient.last_name ?? ""}`.trim()
       : "—",
+    patient_phone: (patient?.phone as string | null | undefined) ?? null,
     doctor_name: doctor?.full_name ?? "—",
   };
 }
@@ -79,7 +80,7 @@ export async function getQuoteById(id: string): Promise<OneResult> {
   const { data, error } = await supabase
     .from("quotes")
     .select(
-      "*, patient:patients!patient_id(first_name,last_name), doctor:profiles!doctor_id(full_name)"
+      "*, patient:patients!patient_id(first_name,last_name,phone), doctor:profiles!doctor_id(full_name)"
     )
     .eq("id", id)
     .single();
@@ -119,6 +120,7 @@ export async function getQuoteById(id: string): Promise<OneResult> {
         quantity: Number(item.quantity),
         unit_price: Number(item.unit_price),
         line_total: Number(item.line_total),
+        done: Boolean(item.done),
       })) as QuoteItem[],
       paid_amount: paid,
     },
@@ -302,4 +304,45 @@ export async function countQuotesByStatus(
 
   if (error) return 0;
   return count ?? 0;
+}
+
+type ItemMutateResult =
+  | { data: QuoteItem; error: null }
+  | { data: null; error: "query_failed"; message?: string };
+
+export async function setQuoteItemDone(
+  itemId: string,
+  done: boolean
+): Promise<ItemMutateResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .rpc("set_quote_item_done", {
+      p_item_id: itemId,
+      p_done: done,
+    })
+    .single();
+
+  if (error || !data) {
+    return {
+      data: null,
+      error: "query_failed",
+      message: error?.message ?? "No se pudo actualizar el estado de la línea",
+    };
+  }
+
+  const row = data as Record<string, unknown>;
+  return {
+    data: {
+      id: String(row.id),
+      quote_id: String(row.quote_id),
+      treatment_id: (row.treatment_id as string | null) ?? null,
+      description: String(row.description),
+      quantity: Number(row.quantity),
+      unit_price: Number(row.unit_price),
+      line_total: Number(row.line_total),
+      sort_order: Number(row.sort_order),
+      done: Boolean(row.done),
+    },
+    error: null,
+  };
 }
