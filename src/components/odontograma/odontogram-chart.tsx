@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { upsertToothConditionAction } from "@/lib/odontogram/actions";
@@ -50,20 +50,49 @@ export function OdontogramChart({
     surface: ToothSurface;
   } | null>(null);
   const [condition, setCondition] = useState<ToothCondition>("caries");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  useEffect(() => {
-    const orientation = typeof screen !== "undefined"
+  function lockableOrientation() {
+    return typeof screen !== "undefined"
       ? (screen.orientation as ScreenOrientation & {
           lock?: (orientation: string) => Promise<void>;
         })
       : undefined;
-    orientation?.lock?.("landscape").catch(() => {
-      // No soportado (navegador no instalado como PWA); se ignora en silencio.
-    });
+  }
+
+  useEffect(() => {
+    const container = containerRef.current;
+    function onFullscreenChange() {
+      const active = document.fullscreenElement === container;
+      setIsFullscreen(active);
+      if (!active) {
+        lockableOrientation()?.unlock?.();
+      }
+    }
+    document.addEventListener("fullscreenchange", onFullscreenChange);
     return () => {
-      orientation?.unlock?.();
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      if (document.fullscreenElement === container) {
+        document.exitFullscreen().catch(() => {});
+      }
     };
   }, []);
+
+  async function enterLandscapeFullscreen() {
+    try {
+      await containerRef.current?.requestFullscreen();
+      await lockableOrientation()?.lock?.("landscape");
+    } catch {
+      toast.error("Tu navegador no permite pantalla completa horizontal aquí");
+    }
+  }
+
+  function exitLandscapeFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
 
   const selectedLabel = useMemo(() => {
     if (!selected) return "Ninguna seleccionada";
@@ -152,10 +181,34 @@ export function OdontogramChart({
       : CONDITIONS.filter((c) => !WHOLE_TOOTH_CONDITIONS.has(c));
 
   return (
-    <div className="flex flex-col gap-6">
-      <p className="rounded-lg border border-dashed bg-muted/40 p-2 text-center text-xs text-muted-foreground portrait:block landscape:hidden sm:hidden">
-        Gira tu dispositivo para una vista más grande del odontograma
-      </p>
+    <div
+      ref={containerRef}
+      className={cn(
+        "flex flex-col gap-6",
+        isFullscreen && "h-full overflow-auto bg-background p-4"
+      )}
+    >
+      {isFullscreen ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={exitLandscapeFullscreen}
+          className="self-end"
+        >
+          Salir de pantalla completa
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={enterLandscapeFullscreen}
+          className="hidden self-center portrait:inline-flex sm:hidden"
+        >
+          Ver en pantalla completa (horizontal)
+        </Button>
+      )}
 
       <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 landscape:p-6">
         <p className="text-center text-xs text-muted-foreground uppercase tracking-wide">
