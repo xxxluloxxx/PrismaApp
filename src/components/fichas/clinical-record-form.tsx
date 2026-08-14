@@ -19,23 +19,31 @@ export function ClinicalRecordForm({
   patients,
   doctors,
   defaultDoctorId,
+  defaultPatientId,
 }: {
   patients: Patient[];
   doctors: Profile[];
   defaultDoctorId?: string;
+  defaultPatientId?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [patientId, setPatientId] = useState(defaultPatientId ?? "");
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    if (!patientId) {
+      setError("Selecciona un paciente");
+      toast.error("Selecciona un paciente");
+      return;
+    }
     const form = new FormData(event.currentTarget);
 
     startTransition(async () => {
       const result = await createClinicalRecordAction({
-        patient_id: String(form.get("patient_id")),
+        patient_id: patientId,
         doctor_id: String(form.get("doctor_id")),
         record_date: String(form.get("record_date") || new Date().toISOString().slice(0, 10)),
         chief_complaint: String(form.get("chief_complaint") ?? "").trim() || null,
@@ -65,7 +73,13 @@ export function ClinicalRecordForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="patient_id">Paciente</Label>
-          <Select name="patient_id" required disabled={pending}>
+          <Select
+            name="patient_id"
+            required
+            value={patientId || undefined}
+            onValueChange={(v) => setPatientId(v ?? "")}
+            disabled={pending}
+          >
             <SelectTrigger id="patient_id" size="sm" className="w-full">
               <SelectValue placeholder="Seleccionar…">
                 {(value: string) => {

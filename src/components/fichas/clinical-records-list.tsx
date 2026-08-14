@@ -18,10 +18,15 @@ import { cn } from "@/lib/utils";
 
 export function ClinicalRecordsList({
   records,
+  patientId,
 }: {
   records: ClinicalRecordWithNames[];
+  patientId?: string;
 }) {
   const router = useRouter();
+  const nuevaHref = patientId
+    ? `/fichas/nueva?patient=${patientId}`
+    : "/fichas/nueva";
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -33,7 +38,7 @@ export function ClinicalRecordsList({
             Historia clínica enriquecida por visita
           </p>
         </div>
-        <Link href="/fichas/nueva" className={cn(buttonVariants())}>
+        <Link href={nuevaHref} className={cn(buttonVariants())}>
           Nueva ficha
         </Link>
       </div>

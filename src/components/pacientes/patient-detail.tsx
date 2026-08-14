@@ -64,7 +64,7 @@ export function PatientDetail({ patient }: { patient: Patient }) {
             Editar
           </Link>
           <Link
-            href={`/odontograma?patient=${patient.id}`}
+            href={`/fichas?patient=${patient.id}`}
             className={cn(buttonVariants({ variant: "outline" }))}
           >
             Odontograma

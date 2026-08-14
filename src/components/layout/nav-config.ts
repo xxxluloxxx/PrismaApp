@@ -4,7 +4,6 @@ import {
   ClipboardList,
   LayoutDashboard,
   Settings,
-  Smile,
   UsersRound,
   Wallet,
   type LucideIcon,
@@ -25,7 +24,6 @@ export const primaryNav: NavItem[] = [
   { href: "/pacientes", label: "Pacientes", icon: UsersRound },
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/fichas", label: "Fichas", icon: ClipboardList },
-  { href: "/odontograma", label: "Odontograma", icon: Smile },
   { href: "/presupuestos", label: "Presupuestos", icon: Wallet },
 ];
 
@@ -61,13 +59,13 @@ export function navForProfile(profile: Profile): NavItem[] {
 /**
  * Ítems primarios de la barra inferior móvil (máx. 5), distintos por rol
  * según el flujo de uso diario: el médico vive en lo clínico (agenda,
- * pacientes, fichas, odontograma); el administrador pesa más lo operativo
+ * pacientes, fichas, presupuestos); el administrador pesa más lo operativo
  * (pacientes, agenda, equipo, tratamientos). El resto de la navegación
  * queda en el drawer lateral ("Más opciones"); "Configuración" vive aparte,
  * en el menú de usuario.
  */
 export function bottomNavForProfile(profile: Profile): NavItem[] {
-  const [inicio, pacientes, agenda, fichas, odontograma] = primaryNav;
+  const [inicio, pacientes, agenda, fichas, presupuestos] = primaryNav;
 
   if (isAdmin(profile)) {
     const equipo = adminNav.find((item) => item.href === "/equipo")!;
@@ -77,7 +75,7 @@ export function bottomNavForProfile(profile: Profile): NavItem[] {
     return [inicio, pacientes, agenda, equipo, tratamientos];
   }
 
-  return [inicio, agenda, pacientes, fichas, odontograma];
+  return [inicio, agenda, pacientes, fichas, presupuestos];
 }
 
 /**

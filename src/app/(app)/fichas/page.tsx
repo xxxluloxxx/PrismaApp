@@ -3,11 +3,19 @@ import { listClinicalRecords } from "@/lib/supabase/clinical";
 
 export const dynamic = "force-dynamic";
 
-export default async function FichasPage() {
-  const result = await listClinicalRecords();
+export default async function FichasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ patient?: string }>;
+}) {
+  const params = await searchParams;
+  const result = await listClinicalRecords({ patientId: params.patient });
   return (
     <>
-      <ClinicalRecordsList records={result.data ?? []} />
+      <ClinicalRecordsList
+        records={result.data ?? []}
+        patientId={params.patient}
+      />
       {result.error ? (
         <p className="mt-4 text-sm text-destructive">
           No se pudieron cargar las fichas

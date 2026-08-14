@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { OdontogramChart } from "@/components/odontograma/odontogram-chart";
 import { uploadClinicalImageAction } from "@/lib/clinical/actions";
 import type {
   ClinicalImage,
@@ -12,6 +13,7 @@ import type {
   ClinicalRecordWithNames,
 } from "@/lib/types/clinical";
 import { CLINICAL_IMAGE_TYPE_LABELS } from "@/lib/types/clinical";
+import type { OdontogramWithNames } from "@/lib/types/odontogram";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -28,9 +30,11 @@ import { cn } from "@/lib/utils";
 export function ClinicalRecordDetail({
   record,
   images,
+  odontogram,
 }: {
   record: ClinicalRecordWithNames;
   images: ClinicalImage[];
+  odontogram: OdontogramWithNames | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -92,6 +96,25 @@ export function ClinicalRecordDetail({
               <p className="font-medium whitespace-pre-wrap">{value || "—"}</p>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Odontograma</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {odontogram ? (
+            <OdontogramChart
+              odontogramId={odontogram.id}
+              initialTeeth={odontogram.teeth ?? []}
+              clinicalRecordId={record.id}
+            />
+          ) : (
+            <p className="text-center text-sm text-muted-foreground">
+              No se pudo cargar el odontograma de esta ficha.
+            </p>
+          )}
         </CardContent>
       </Card>
 

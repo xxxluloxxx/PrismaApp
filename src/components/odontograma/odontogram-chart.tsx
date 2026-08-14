@@ -39,9 +39,11 @@ function buildTeethMap(rows: OdontogramTooth[]): TeethMap {
 export function OdontogramChart({
   odontogramId,
   initialTeeth,
+  clinicalRecordId,
 }: {
   odontogramId: string;
   initialTeeth: OdontogramTooth[];
+  clinicalRecordId?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [teeth, setTeeth] = useState<TeethMap>(() => buildTeethMap(initialTeeth));
@@ -136,6 +138,7 @@ export function OdontogramChart({
         tooth_code: code,
         surface,
         condition,
+        clinical_record_id: clinicalRecordId,
       });
       if (!result.ok) {
         toast.error(result.message);

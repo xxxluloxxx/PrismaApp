@@ -63,14 +63,6 @@ export type OdontogramWithNames = Odontogram & {
   teeth?: OdontogramTooth[];
 };
 
-export type OdontogramInsert = {
-  patient_id: string;
-  clinical_record_id?: string | null;
-  chart_type?: ChartType;
-  notes?: string | null;
-  created_by?: string | null;
-};
-
 export const TOOTH_CONDITION_LABELS: Record<ToothCondition, string> = {
   sano: "Sano",
   caries: "Caries",

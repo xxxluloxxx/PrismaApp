@@ -5,7 +5,12 @@ import { listStaff } from "@/lib/supabase/staff";
 
 export const dynamic = "force-dynamic";
 
-export default async function NuevaFichaPage() {
+export default async function NuevaFichaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ patient?: string }>;
+}) {
+  const params = await searchParams;
   const [patients, staff, me] = await Promise.all([
     listPatients({ activeOnly: true }),
     listStaff({ activeOnly: true }),
@@ -27,6 +32,7 @@ export default async function NuevaFichaPage() {
         patients={patients.data ?? []}
         doctors={doctors}
         defaultDoctorId={me.profile?.id}
+        defaultPatientId={params.patient}
       />
     </div>
   );

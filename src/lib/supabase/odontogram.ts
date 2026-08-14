@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type {
   Odontogram,
-  OdontogramInsert,
   OdontogramTooth,
   OdontogramWithNames,
   ToothCondition,
@@ -91,63 +90,37 @@ export async function getOdontogramById(id: string): Promise<OneResult> {
   };
 }
 
-export async function createOdontogram(
-  input: OdontogramInsert,
-  opts?: { cloneLast?: boolean }
-): Promise<MutateResult> {
+export async function getOdontogramByClinicalRecordId(
+  clinicalRecordId: string
+): Promise<OneResult> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("odontograms")
-    .insert({
-      patient_id: input.patient_id,
-      clinical_record_id: input.clinical_record_id ?? null,
-      chart_type: input.chart_type ?? "adulto",
-      notes: input.notes ?? null,
-      created_by: input.created_by ?? null,
-    })
+    .select("*, patient:patients!patient_id(first_name,last_name)")
+    .eq("clinical_record_id", clinicalRecordId)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error: "query_failed", message: error.message };
+  }
+  if (!data) {
+    return { data: null, error: "not_found" };
+  }
+
+  const chart = mapRow(data as Record<string, unknown>);
+  const { data: teeth, error: teethError } = await supabase
+    .from("odontogram_teeth")
     .select("*")
-    .single();
+    .eq("odontogram_id", chart.id);
 
-  if (error || !data) {
-    return {
-      data: null,
-      error: "query_failed",
-      message: error?.message ?? "No se pudo crear el odontograma",
-    };
+  if (teethError) {
+    return { data: null, error: "query_failed", message: teethError.message };
   }
 
-  const chart = data as Odontogram;
-
-  if (opts?.cloneLast) {
-    const { data: previous } = await supabase
-      .from("odontograms")
-      .select("id")
-      .eq("patient_id", input.patient_id)
-      .neq("id", chart.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (previous?.id) {
-      const { data: prevTeeth } = await supabase
-        .from("odontogram_teeth")
-        .select("tooth_code, surface, condition, notes")
-        .eq("odontogram_id", previous.id);
-
-      if (prevTeeth && prevTeeth.length > 0) {
-        const rows = prevTeeth.map((t) => ({
-          odontogram_id: chart.id,
-          tooth_code: t.tooth_code,
-          surface: t.surface,
-          condition: t.condition,
-          notes: t.notes ?? null,
-        }));
-        await supabase.from("odontogram_teeth").insert(rows);
-      }
-    }
-  }
-
-  return { data: chart, error: null };
+  return {
+    data: { ...chart, teeth: (teeth ?? []) as OdontogramTooth[] },
+    error: null,
+  };
 }
 
 export async function upsertToothCondition(input: {

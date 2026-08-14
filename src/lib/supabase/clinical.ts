@@ -91,10 +91,25 @@ export async function createClinicalRecord(
   input: ClinicalRecordInsert
 ): Promise<MutateResult> {
   const supabase = await createClient();
+  // create_clinical_record_with_odontogram() inserta la ficha + odontograma
+  // obligatorio (clonando dientes del odontograma anterior del paciente si
+  // existe) en una sola transacción RPC SECURITY INVOKER.
   const { data, error } = await supabase
-    .from("clinical_records")
-    .insert(input)
-    .select("*")
+    .rpc("create_clinical_record_with_odontogram", {
+      p_record: {
+        patient_id: input.patient_id,
+        doctor_id: input.doctor_id,
+        appointment_id: input.appointment_id ?? null,
+        record_date: input.record_date ?? null,
+        chief_complaint: input.chief_complaint ?? null,
+        antecedents: input.antecedents ?? null,
+        allergies: input.allergies ?? null,
+        current_medications: input.current_medications ?? null,
+        diagnosis: input.diagnosis ?? null,
+        treatment_plan: input.treatment_plan ?? null,
+        observations: input.observations ?? null,
+      },
+    })
     .single();
   if (error) {
     return { data: null, error: "query_failed", message: error.message };
