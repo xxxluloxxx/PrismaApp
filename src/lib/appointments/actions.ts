@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
+import { sendPushToProfiles } from "@/lib/push/send";
+import { DEFAULT_CLINIC_TIMEZONE } from "@/lib/supabase/clinic-timezone";
 import {
   createAppointment,
   updateAppointment,
@@ -38,6 +40,31 @@ export async function createAppointmentAction(
   }
 
   revalidatePath("/agenda");
+
+  try {
+    const appointmentDate = result.data.starts_at
+      ? new Date(result.data.starts_at).toLocaleString("es-EC", {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: DEFAULT_CLINIC_TIMEZONE,
+        })
+      : null;
+
+    // Se espera el envío para que serverless no termine antes de completarlo.
+    await sendPushToProfiles([input.doctor_id], {
+      title: "Nueva cita agendada",
+      body: appointmentDate
+        ? `Nueva cita para ${appointmentDate}`
+        : "Se ha agendado una nueva cita",
+      url: `/agenda/${result.data.id}`,
+    });
+  } catch (error) {
+    console.error(
+      "Falló el push de nueva cita:",
+      error instanceof Error ? error.message : error
+    );
+  }
+
   return { ok: true, id: result.data.id };
 }
 

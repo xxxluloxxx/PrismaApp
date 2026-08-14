@@ -81,3 +81,61 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+self.addEventListener("push", (event) => {
+  let payload = {
+    title: "PrismaApp",
+    body: "Tienes una notificación nueva",
+    url: "/dashboard",
+  };
+
+  try {
+    const data = event.data?.json();
+    payload = {
+      title: data?.title || payload.title,
+      body: data?.body || payload.body,
+      url: data?.url || payload.url,
+    };
+  } catch {
+    // Mantener el contenido predeterminado si el payload no es JSON válido.
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: payload.url || "/dashboard" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const path = event.notification.data?.url || "/dashboard";
+  const targetUrl = new URL(path, self.location.origin).href;
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then(async (windowClients) => {
+        const exactClient = windowClients.find(
+          (client) => client.url === targetUrl
+        );
+        if (exactClient) {
+          return exactClient.focus();
+        }
+
+        const sameOriginClient = windowClients.find(
+          (client) => new URL(client.url).origin === self.location.origin
+        );
+        if (sameOriginClient) {
+          await sameOriginClient.navigate(targetUrl);
+          return sameOriginClient.focus();
+        }
+
+        return self.clients.openWindow(targetUrl);
+      })
+  );
+});

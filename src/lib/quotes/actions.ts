@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
+import {
+  getActiveAdminProfileIds,
+  sendPushToProfiles,
+} from "@/lib/push/send";
 import { getClinicSettings } from "@/lib/supabase/clinic-settings";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import {
@@ -71,6 +75,29 @@ export async function createQuoteAction(input: {
 
   revalidatePath("/presupuestos");
   revalidatePath("/dashboard");
+
+  if (input.publish) {
+    try {
+      const adminIds = await getActiveAdminProfileIds();
+      const recipientIds =
+        input.doctor_id === profile.profile.id
+          ? adminIds
+          : [input.doctor_id, ...adminIds];
+
+      // Se espera el envío para que serverless no termine antes de completarlo.
+      await sendPushToProfiles(recipientIds, {
+        title: "Presupuesto pendiente",
+        body: `Presupuesto por $${total.toFixed(2)} pendiente de aprobación`,
+        url: `/presupuestos/${result.data.id}`,
+      });
+    } catch (error) {
+      console.error(
+        "Falló el push de presupuesto pendiente:",
+        error instanceof Error ? error.message : error
+      );
+    }
+  }
+
   return { ok: true, id: result.data.id };
 }
 

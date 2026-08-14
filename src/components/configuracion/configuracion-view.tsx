@@ -2,6 +2,7 @@ import { AppearanceCard } from "@/components/configuracion/appearance-card";
 import { ClinicSettingsForm } from "@/components/configuracion/clinic-settings-form";
 import { NotificationsCard } from "@/components/configuracion/notifications-card";
 import { ProfileCard } from "@/components/configuracion/profile-card";
+import { PushNotificationsCard } from "@/components/configuracion/push-notifications-card";
 import { SecurityCard } from "@/components/configuracion/security-card";
 import { Separator } from "@/components/ui/separator";
 import type { ClinicSettings } from "@/lib/types/clinic-settings";
@@ -40,6 +41,7 @@ export function ConfiguracionView({
           <SecurityCard />
           <AppearanceCard />
           <NotificationsCard />
+          <PushNotificationsCard />
         </div>
       </section>
 

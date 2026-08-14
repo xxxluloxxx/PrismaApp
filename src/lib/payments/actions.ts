@@ -2,10 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 
+import {
+  getActiveAdminProfileIds,
+  sendPushToProfiles,
+} from "@/lib/push/send";
 import { createPayment } from "@/lib/supabase/payment";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { getQuoteById } from "@/lib/supabase/quote";
-import type { PaymentMethod } from "@/lib/types/quote";
+import {
+  PAYMENT_METHOD_LABELS,
+  type PaymentMethod,
+} from "@/lib/types/quote";
 
 export type ActionResult =
   | { ok: true; id: string }
@@ -68,5 +75,28 @@ export async function createPaymentAction(input: {
   revalidatePath(`/presupuestos/${input.quote_id}`);
   revalidatePath("/presupuestos");
   revalidatePath("/dashboard");
+
+  try {
+    const adminIds = await getActiveAdminProfileIds();
+    const recipientIds =
+      quote.data.doctor_id === profile.profile.id
+        ? adminIds
+        : [quote.data.doctor_id, ...adminIds];
+
+    // Se espera el envío para que serverless no termine antes de completarlo.
+    await sendPushToProfiles(recipientIds, {
+      title: "Pago registrado",
+      body: `Pago de $${input.amount.toFixed(2)} mediante ${PAYMENT_METHOD_LABELS[
+        input.method
+      ].toLowerCase()}`,
+      url: `/presupuestos/${input.quote_id}`,
+    });
+  } catch (error) {
+    console.error(
+      "Falló el push de pago registrado:",
+      error instanceof Error ? error.message : error
+    );
+  }
+
   return { ok: true, id: result.data.id };
 }
