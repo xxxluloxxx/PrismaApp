@@ -8,8 +8,11 @@ export async function proxy(request: NextRequest) {
   const isLogin = pathname === "/login";
   const isRoot = pathname === "/";
   const isApiRoute = pathname.startsWith("/api/");
+  const isPublicBooking =
+    pathname === "/reservar" || pathname.startsWith("/reservar/");
 
-  const isProtected = !isLogin && !isRoot && !isApiRoute;
+  const isProtected =
+    !isLogin && !isRoot && !isApiRoute && !isPublicBooking;
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();

@@ -76,9 +76,16 @@ export function DayDetailSheet({
                     {appt.patient_name} · {appt.doctor_name}
                   </p>
                 </div>
-                <Badge variant="secondary" className="shrink-0">
-                  {APPOINTMENT_STATUS_LABELS[appt.status]}
-                </Badge>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Badge variant="secondary">
+                    {APPOINTMENT_STATUS_LABELS[appt.status]}
+                  </Badge>
+                  {appt.source === "online" ? (
+                    <Badge variant="outline" className="text-[10px]">
+                      Online
+                    </Badge>
+                  ) : null}
+                </div>
               </Link>
             ))
           )}

@@ -5,6 +5,8 @@ export type AppointmentStatus =
   | "cancelled"
   | "no_show";
 
+export type AppointmentSource = "online" | "staff";
+
 export type Appointment = {
   id: string;
   patient_id: string;
@@ -12,6 +14,7 @@ export type Appointment = {
   starts_at: string;
   ends_at: string;
   status: AppointmentStatus;
+  source: AppointmentSource;
   reason: string | null;
   notes: string | null;
   created_by: string | null;
@@ -30,9 +33,10 @@ export type AppointmentInsert = {
   starts_at: string;
   ends_at: string;
   status?: AppointmentStatus;
+  source?: AppointmentSource;
   reason?: string | null;
   notes?: string | null;
-  created_by: string;
+  created_by: string | null;
 };
 
 export type AppointmentUpdate = Partial<

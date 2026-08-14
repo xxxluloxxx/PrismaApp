@@ -1,4 +1,8 @@
-import type { AppointmentStatus, AppointmentWithRelations } from "@/lib/types/appointment";
+import type {
+  AppointmentSource,
+  AppointmentStatus,
+  AppointmentWithRelations,
+} from "@/lib/types/appointment";
 
 /** Select reutilizado por las variantes server y client de listAppointments. */
 export const APPOINTMENT_LIST_SELECT =
@@ -17,6 +21,7 @@ export function mapAppointmentRow(
     starts_at: String(row.starts_at),
     ends_at: String(row.ends_at),
     status: row.status as AppointmentStatus,
+    source: row.source as AppointmentSource,
     reason: (row.reason as string | null) ?? null,
     notes: (row.notes as string | null) ?? null,
     created_by: (row.created_by as string | null) ?? null,

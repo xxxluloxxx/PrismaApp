@@ -103,7 +103,14 @@ function ListView({ appointments }: { appointments: AppointmentWithRelations[] }
                           minute: "2-digit",
                         })}
                       </span>
-                      <Badge variant="secondary">{APPOINTMENT_STATUS_LABELS[appt.status]}</Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant="secondary">{APPOINTMENT_STATUS_LABELS[appt.status]}</Badge>
+                        {appt.source === "online" ? (
+                          <Badge variant="outline" className="text-[10px]">
+                            Online
+                          </Badge>
+                        ) : null}
+                      </div>
                     </div>
                     <span className="text-sm text-muted-foreground">{appt.patient_name}</span>
                     <span className="text-sm text-muted-foreground">{appt.doctor_name}</span>
@@ -153,7 +160,14 @@ function ListView({ appointments }: { appointments: AppointmentWithRelations[] }
                       <TableCell>{appt.patient_name}</TableCell>
                       <TableCell>{appt.doctor_name}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{APPOINTMENT_STATUS_LABELS[appt.status]}</Badge>
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="secondary">{APPOINTMENT_STATUS_LABELS[appt.status]}</Badge>
+                          {appt.source === "online" ? (
+                            <Badge variant="outline" className="text-[10px]">
+                              Online
+                            </Badge>
+                          ) : null}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

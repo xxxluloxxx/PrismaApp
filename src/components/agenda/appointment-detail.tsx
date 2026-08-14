@@ -71,6 +71,11 @@ export function AppointmentDetail({
           <Badge className="mt-2">
             {APPOINTMENT_STATUS_LABELS[appointment.status]}
           </Badge>
+          {appointment.source === "online" ? (
+            <Badge variant="outline" className="mt-2 ml-2 text-[10px]">
+              Online
+            </Badge>
+          ) : null}
         </div>
         <Link href="/agenda" className={cn(buttonVariants({ variant: "ghost" }))}>
           Volver
