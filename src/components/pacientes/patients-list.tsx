@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Patient } from "@/lib/types/patient";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -82,52 +83,76 @@ export function PatientsList({
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Documento</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Estado</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {patients.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  No hay pacientes todavía
-                </TableCell>
-              </TableRow>
-            ) : (
-              patients.map((p) => (
-                <TableRow
-                  key={p.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(`/pacientes/${p.id}`)}
-                >
-                  <TableCell>
-                    <Link
-                      href={`/pacientes/${p.id}`}
-                      className="font-medium hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+      {patients.length === 0 ? (
+        <p className="rounded-xl border p-4 text-center text-sm text-muted-foreground">
+          No hay pacientes todavía
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2 sm:hidden">
+            {patients.map((p) => (
+              <Card
+                key={p.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/pacientes/${p.id}`)}
+              >
+                <CardContent className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col">
+                    <span className="font-medium">
                       {p.first_name} {p.last_name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{p.document_id}</TableCell>
-                  <TableCell>{p.phone}</TableCell>
-                  <TableCell>
-                    <Badge variant={p.is_active ? "success" : "destructive"}>
-                      {p.is_active ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </TableCell>
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {p.phone}
+                    </span>
+                  </div>
+                  <Badge variant={p.is_active ? "success" : "destructive"}>
+                    {p.is_active ? "Activo" : "Inactivo"}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Documento</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Estado</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {patients.map((p) => (
+                  <TableRow
+                    key={p.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/pacientes/${p.id}`)}
+                  >
+                    <TableCell>
+                      <Link
+                        href={`/pacientes/${p.id}`}
+                        className="font-medium hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {p.first_name} {p.last_name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{p.document_id}</TableCell>
+                    <TableCell>{p.phone}</TableCell>
+                    <TableCell>
+                      <Badge variant={p.is_active ? "success" : "destructive"}>
+                        {p.is_active ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
