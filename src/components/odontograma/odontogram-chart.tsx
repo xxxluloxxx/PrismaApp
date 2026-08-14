@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { upsertToothConditionAction } from "@/lib/odontogram/actions";
@@ -50,6 +50,20 @@ export function OdontogramChart({
     surface: ToothSurface;
   } | null>(null);
   const [condition, setCondition] = useState<ToothCondition>("caries");
+
+  useEffect(() => {
+    const orientation = typeof screen !== "undefined"
+      ? (screen.orientation as ScreenOrientation & {
+          lock?: (orientation: string) => Promise<void>;
+        })
+      : undefined;
+    orientation?.lock?.("landscape").catch(() => {
+      // No soportado (navegador no instalado como PWA); se ignora en silencio.
+    });
+    return () => {
+      orientation?.unlock?.();
+    };
+  }, []);
 
   const selectedLabel = useMemo(() => {
     if (!selected) return "Ninguna seleccionada";
@@ -114,7 +128,7 @@ export function OdontogramChart({
             {index === midAt ? (
               <span
                 aria-hidden
-                className="mx-1 hidden h-10 w-px self-center bg-border sm:block"
+                className="mx-1 hidden h-10 w-px self-center bg-border landscape:block sm:block"
               />
             ) : null}
             <ToothDiagram
@@ -139,7 +153,11 @@ export function OdontogramChart({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
+      <p className="rounded-lg border border-dashed bg-muted/40 p-2 text-center text-xs text-muted-foreground portrait:block landscape:hidden sm:hidden">
+        Gira tu dispositivo para una vista más grande del odontograma
+      </p>
+
+      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 landscape:p-6">
         <p className="text-center text-xs text-muted-foreground uppercase tracking-wide">
           Superior
         </p>
@@ -158,7 +176,7 @@ export function OdontogramChart({
         condiciones de toda la pieza (ausente, implante, prótesis, etc.).
       </p>
 
-      <div className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-end">
+      <div className="flex flex-col gap-3 rounded-xl border p-4 landscape:flex-row landscape:items-end sm:flex-row sm:items-end">
         <div className="flex flex-1 flex-col gap-2">
           <Label>Selección</Label>
           <p className="text-sm font-medium">{selectedLabel}</p>

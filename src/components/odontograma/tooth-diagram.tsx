@@ -66,13 +66,13 @@ export function ToothDiagram({
 
   return (
     <div className="group relative flex flex-col items-center gap-0.5">
-      <span className="text-[9px] font-medium text-muted-foreground leading-none">
+      <span className="text-[9px] font-medium text-muted-foreground leading-none landscape:text-[11px] sm:text-[11px]">
         {code}
       </span>
       <div className="relative">
         <svg
           viewBox="0 0 100 100"
-          className="w-[36px] h-[36px] overflow-visible sm:w-[44px] sm:h-[44px]"
+          className="w-[36px] h-[36px] overflow-visible landscape:w-[44px] landscape:h-[44px] sm:w-[44px] sm:h-[44px]"
           role="group"
           aria-label={`Pieza ${code}`}
         >
@@ -152,7 +152,7 @@ export function ToothDiagram({
           title="Aplicar condición a toda la pieza"
           aria-label={`Pieza ${code}: aplicar condición a toda la pieza`}
           className={cn(
-            "absolute -right-1 -top-1 flex w-[14px] h-[14px] items-center justify-center rounded-full border border-border bg-background text-[7px] leading-none text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 sm:w-4 sm:h-4",
+            "absolute -right-1 -top-1 flex w-[14px] h-[14px] items-center justify-center rounded-full border border-border bg-background text-[7px] leading-none text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 landscape:w-4 landscape:h-4 sm:w-4 sm:h-4",
             selectedSurface === "total" && "border-primary text-primary opacity-100"
           )}
         >
