@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { ClinicalRecordWithNames } from "@/lib/types/clinical";
 import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -37,50 +38,71 @@ export function ClinicalRecordsList({
         </Link>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Paciente</TableHead>
-              <TableHead>Médico</TableHead>
-              <TableHead>Motivo</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {records.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  Sin fichas
-                </TableCell>
-              </TableRow>
-            ) : (
-              records.map((r) => (
-                <TableRow
-                  key={r.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(`/fichas/${r.id}`)}
-                >
-                  <TableCell>
-                    <Link
-                      href={`/fichas/${r.id}`}
-                      className="font-medium hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {r.record_date}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{r.patient_name}</TableCell>
-                  <TableCell>{r.doctor_name}</TableCell>
-                  <TableCell className="max-w-xs truncate">
+      {records.length === 0 ? (
+        <p className="rounded-xl border p-4 text-center text-sm text-muted-foreground">
+          Sin fichas
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2 sm:hidden">
+            {records.map((r) => (
+              <Card
+                key={r.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/fichas/${r.id}`)}
+              >
+                <CardContent className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium">{r.patient_name}</span>
+                    <span className="text-sm text-muted-foreground">{r.record_date}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{r.doctor_name}</span>
+                  <span className="truncate text-sm text-muted-foreground">
                     {r.chief_complaint || "—"}
-                  </TableCell>
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Paciente</TableHead>
+                  <TableHead>Médico</TableHead>
+                  <TableHead>Motivo</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {records.map((r) => (
+                  <TableRow
+                    key={r.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/fichas/${r.id}`)}
+                  >
+                    <TableCell>
+                      <Link
+                        href={`/fichas/${r.id}`}
+                        className="font-medium hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {r.record_date}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{r.patient_name}</TableCell>
+                    <TableCell>{r.doctor_name}</TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {r.chief_complaint || "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

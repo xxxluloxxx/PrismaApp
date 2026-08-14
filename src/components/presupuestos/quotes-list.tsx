@@ -8,6 +8,7 @@ import type { QuoteWithNames } from "@/lib/types/quote";
 import { QUOTE_STATUS_LABELS } from "@/lib/types/quote";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -46,67 +47,102 @@ export function QuotesList({ quotes }: { quotes: QuoteWithNames[] }) {
         </Link>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Paciente</TableHead>
-              <TableHead>Médico</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {quotes.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center text-muted-foreground"
-                >
-                  Sin presupuestos
-                </TableCell>
-              </TableRow>
-            ) : (
-              quotes.map((q) => (
-                <TableRow
-                  key={q.id}
-                  className="cursor-pointer"
-                  onClick={() =>
-                    setExpanded((prev) => (prev === q.id ? null : q.id))
-                  }
-                >
-                  <TableCell>
+      {quotes.length === 0 ? (
+        <p className="rounded-xl border p-4 text-center text-sm text-muted-foreground">
+          Sin presupuestos
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2 sm:hidden">
+            {quotes.map((q) => (
+              <Card
+                key={q.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  setExpanded((prev) => (prev === q.id ? null : q.id))
+                }
+              >
+                <CardContent className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium">{q.patient_name}</span>
+                    <Badge variant="secondary">
+                      {QUOTE_STATUS_LABELS[q.status]}
+                    </Badge>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{q.doctor_name}</span>
+                  <div className="flex items-center justify-between gap-3">
                     <Link
                       href={`/presupuestos/${q.id}`}
-                      className="font-medium hover:underline"
+                      className="text-sm text-muted-foreground hover:underline"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {q.issue_date}
                     </Link>
-                  </TableCell>
-                  <TableCell>{q.patient_name}</TableCell>
-                  <TableCell>{q.doctor_name}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {QUOTE_STATUS_LABELS[q.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {money(q.total, q.currency)}
-                    {expanded === q.id ? (
-                      <p className="mt-1 text-xs font-normal text-muted-foreground">
-                        Subtotal {money(q.subtotal, q.currency)} · IVA{" "}
-                        {(q.tax_rate * 100).toFixed(0)}%
-                      </p>
-                    ) : null}
-                  </TableCell>
+                    <span className="font-medium">{money(q.total, q.currency)}</span>
+                  </div>
+                  {expanded === q.id ? (
+                    <p className="text-xs text-muted-foreground">
+                      Subtotal {money(q.subtotal, q.currency)} · IVA{" "}
+                      {(q.tax_rate * 100).toFixed(0)}%
+                    </p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Paciente</TableHead>
+                  <TableHead>Médico</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {quotes.map((q) => (
+                  <TableRow
+                    key={q.id}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setExpanded((prev) => (prev === q.id ? null : q.id))
+                    }
+                  >
+                    <TableCell>
+                      <Link
+                        href={`/presupuestos/${q.id}`}
+                        className="font-medium hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {q.issue_date}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{q.patient_name}</TableCell>
+                    <TableCell>{q.doctor_name}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {QUOTE_STATUS_LABELS[q.status]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {money(q.total, q.currency)}
+                      {expanded === q.id ? (
+                        <p className="mt-1 text-xs font-normal text-muted-foreground">
+                          Subtotal {money(q.subtotal, q.currency)} · IVA{" "}
+                          {(q.tax_rate * 100).toFixed(0)}%
+                        </p>
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppointmentsCalendarView } from "@/components/agenda/appointments-calendar-view";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -78,7 +79,41 @@ function ListView({ appointments }: { appointments: AppointmentWithRelations[] }
       {Array.from(grouped.entries()).map(([day, items]) => (
         <section key={day} className="flex flex-col gap-2">
           <h2 className="font-heading text-lg font-semibold capitalize">{day}</h2>
-          <div className="overflow-x-auto rounded-xl border">
+
+          <div className="flex flex-col gap-2 sm:hidden">
+            {items.map((appt) => {
+              const start = new Date(appt.starts_at);
+              const end = new Date(appt.ends_at);
+              return (
+                <Card
+                  key={appt.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/agenda/${appt.id}`)}
+                >
+                  <CardContent className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium">
+                        {start.toLocaleTimeString("es-EC", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        –{" "}
+                        {end.toLocaleTimeString("es-EC", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <Badge variant="secondary">{APPOINTMENT_STATUS_LABELS[appt.status]}</Badge>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{appt.patient_name}</span>
+                    <span className="text-sm text-muted-foreground">{appt.doctor_name}</span>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border sm:block">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -9,6 +9,7 @@ import { createOdontogramAction } from "@/lib/odontogram/actions";
 import type { OdontogramWithNames } from "@/lib/types/odontogram";
 import type { Patient } from "@/lib/types/patient";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -109,53 +110,72 @@ export function OdontogramsHome({
 
       <div>
         <h2 className="mb-3 font-heading text-xl font-semibold">Recientes</h2>
-        <div className="overflow-x-auto rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Paciente</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recent.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-center text-muted-foreground"
-                  >
-                    Sin odontogramas
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recent.map((o) => (
-                  <TableRow
-                    key={o.id}
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/odontograma/${o.id}`)}
-                  >
-                    <TableCell>
-                      {new Date(o.created_at).toLocaleString("es-EC")}
-                    </TableCell>
-                    <TableCell>{o.patient_name}</TableCell>
-                    <TableCell className="capitalize">{o.chart_type}</TableCell>
-                    <TableCell className="text-right">
-                      <Link
-                        href={`/odontograma/${o.id}`}
-                        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Abrir
-                      </Link>
-                    </TableCell>
+        {recent.length === 0 ? (
+          <p className="rounded-xl border p-4 text-center text-sm text-muted-foreground">
+            Sin odontogramas
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-col gap-2 sm:hidden">
+              {recent.map((o) => (
+                <Card
+                  key={o.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/odontograma/${o.id}`)}
+                >
+                  <CardContent className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{o.patient_name}</span>
+                      <span className="text-sm capitalize text-muted-foreground">
+                        {o.chart_type}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(o.created_at).toLocaleString("es-EC")}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto rounded-xl border sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Paciente</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead />
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                </TableHeader>
+                <TableBody>
+                  {recent.map((o) => (
+                    <TableRow
+                      key={o.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/odontograma/${o.id}`)}
+                    >
+                      <TableCell>
+                        {new Date(o.created_at).toLocaleString("es-EC")}
+                      </TableCell>
+                      <TableCell>{o.patient_name}</TableCell>
+                      <TableCell className="capitalize">{o.chart_type}</TableCell>
+                      <TableCell className="text-right">
+                        <Link
+                          href={`/odontograma/${o.id}`}
+                          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Abrir
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
