@@ -8,6 +8,7 @@ import { updateStaffAction } from "@/lib/staff/actions";
 import type { Profile, UserRole } from "@/lib/types/profile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -164,23 +165,27 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
         </form>
       ) : null}
 
-      <div className="overflow-x-auto rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Correo</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      {staff.length === 0 ? (
+        <p className="rounded-xl border p-4 text-center text-sm text-muted-foreground">
+          Sin miembros del equipo
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2 sm:hidden">
             {staff.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell className="font-medium">{member.full_name}</TableCell>
-                <TableCell>{member.email ?? "—"}</TableCell>
-                <TableCell>
+              <Card key={member.id}>
+                <CardContent className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{member.full_name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {member.email ?? "—"}
+                      </span>
+                    </div>
+                    <Badge variant={member.is_active ? "success" : "destructive"}>
+                      {member.is_active ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </div>
                   <Select
                     value={member.role}
                     onValueChange={(v) => changeRole(member, v as UserRole)}
@@ -188,6 +193,7 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
                   >
                     <SelectTrigger
                       size="sm"
+                      className="w-full"
                       aria-label={`Rol de ${member.full_name}`}
                     >
                       <SelectValue>
@@ -199,13 +205,6 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
                       <SelectItem value="administrador">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={member.is_active ? "success" : "destructive"}>
-                    {member.is_active ? "Activo" : "Inactivo"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
                   <Button
                     size="sm"
                     variant="outline"
@@ -214,12 +213,69 @@ export function StaffAdmin({ staff }: { staff: Profile[] }) {
                   >
                     {member.is_active ? "Desactivar" : "Activar"}
                   </Button>
-                </TableCell>
-              </TableRow>
+                </CardContent>
+              </Card>
             ))}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Correo</TableHead>
+                  <TableHead>Rol</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {staff.map((member) => (
+                  <TableRow key={member.id}>
+                    <TableCell className="font-medium">{member.full_name}</TableCell>
+                    <TableCell>{member.email ?? "—"}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={member.role}
+                        onValueChange={(v) => changeRole(member, v as UserRole)}
+                        disabled={pending}
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          aria-label={`Rol de ${member.full_name}`}
+                        >
+                          <SelectValue>
+                            {(value: UserRole) => ROLE_LABELS[value]}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="medico">Médico</SelectItem>
+                          <SelectItem value="administrador">Administrador</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={member.is_active ? "success" : "destructive"}>
+                        {member.is_active ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={pending}
+                        onClick={() => toggleActive(member)}
+                      >
+                        {member.is_active ? "Desactivar" : "Activar"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
