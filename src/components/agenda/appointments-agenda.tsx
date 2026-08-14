@@ -55,6 +55,7 @@ function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => voi
 }
 
 function ListView({ appointments }: { appointments: AppointmentWithRelations[] }) {
+  const router = useRouter();
   const grouped = new Map<string, AppointmentWithRelations[]>();
   for (const appt of appointments) {
     const day = new Date(appt.starts_at).toLocaleDateString("es-EC", {
@@ -92,9 +93,17 @@ function ListView({ appointments }: { appointments: AppointmentWithRelations[] }
                   const start = new Date(appt.starts_at);
                   const end = new Date(appt.ends_at);
                   return (
-                    <TableRow key={appt.id}>
+                    <TableRow
+                      key={appt.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/agenda/${appt.id}`)}
+                    >
                       <TableCell>
-                        <Link href={`/agenda/${appt.id}`} className="font-medium hover:underline">
+                        <Link
+                          href={`/agenda/${appt.id}`}
+                          className="font-medium hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {start.toLocaleTimeString("es-EC", {
                             hour: "2-digit",
                             minute: "2-digit",

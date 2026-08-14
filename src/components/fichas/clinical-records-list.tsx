@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import type { ClinicalRecordWithNames } from "@/lib/types/clinical";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,6 +20,7 @@ export function ClinicalRecordsList({
 }: {
   records: ClinicalRecordWithNames[];
 }) {
+  const router = useRouter();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -52,9 +56,17 @@ export function ClinicalRecordsList({
               </TableRow>
             ) : (
               records.map((r) => (
-                <TableRow key={r.id}>
+                <TableRow
+                  key={r.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/fichas/${r.id}`)}
+                >
                   <TableCell>
-                    <Link href={`/fichas/${r.id}`} className="font-medium hover:underline">
+                    <Link
+                      href={`/fichas/${r.id}`}
+                      className="font-medium hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {r.record_date}
                     </Link>
                   </TableCell>

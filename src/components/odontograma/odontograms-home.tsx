@@ -131,7 +131,11 @@ export function OdontogramsHome({
                 </TableRow>
               ) : (
                 recent.map((o) => (
-                  <TableRow key={o.id}>
+                  <TableRow
+                    key={o.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/odontograma/${o.id}`)}
+                  >
                     <TableCell>
                       {new Date(o.created_at).toLocaleString("es-EC")}
                     </TableCell>
@@ -141,6 +145,7 @@ export function OdontogramsHome({
                       <Link
                         href={`/odontograma/${o.id}`}
                         className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Abrir
                       </Link>

@@ -101,11 +101,16 @@ export function PatientsList({
               </TableRow>
             ) : (
               patients.map((p) => (
-                <TableRow key={p.id} className="cursor-pointer">
+                <TableRow
+                  key={p.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/pacientes/${p.id}`)}
+                >
                   <TableCell>
                     <Link
                       href={`/pacientes/${p.id}`}
                       className="font-medium hover:underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {p.first_name} {p.last_name}
                     </Link>
