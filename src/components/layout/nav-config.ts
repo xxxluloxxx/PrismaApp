@@ -1,4 +1,5 @@
 import {
+  Banknote,
   BriefcaseMedical,
   CalendarDays,
   ClipboardList,
@@ -25,6 +26,7 @@ export const primaryNav: NavItem[] = [
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/fichas", label: "Fichas", icon: ClipboardList },
   { href: "/presupuestos", label: "Presupuestos", icon: Wallet },
+  { href: "/cobranzas", label: "Cobranzas", icon: Banknote },
 ];
 
 export const adminNav: NavItem[] = [
@@ -60,9 +62,9 @@ export function navForProfile(profile: Profile): NavItem[] {
  * Ítems primarios de la barra inferior móvil (máx. 5), distintos por rol
  * según el flujo de uso diario: el médico vive en lo clínico (agenda,
  * pacientes, fichas, presupuestos); el administrador pesa más lo operativo
- * (pacientes, agenda, equipo, tratamientos). El resto de la navegación
- * queda en el drawer lateral ("Más opciones"); "Configuración" vive aparte,
- * en el menú de usuario.
+ * (pacientes, agenda, equipo, tratamientos). Cobranzas queda en el drawer
+ * ("Más opciones") para no superar el límite de 5. "Configuración" vive
+ * aparte, en el menú de usuario.
  */
 export function bottomNavForProfile(profile: Profile): NavItem[] {
   const [inicio, pacientes, agenda, fichas, presupuestos] = primaryNav;

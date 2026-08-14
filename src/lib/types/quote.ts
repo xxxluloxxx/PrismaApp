@@ -79,6 +79,14 @@ export type Payment = {
   created_at: string;
 };
 
+export type PaymentWithContext = Payment & {
+  patient_name: string;
+  doctor_name: string;
+  doctor_id: string;
+  quote_status: string;
+  quote_total: number;
+};
+
 export type PaymentInsert = {
   quote_id: string;
   patient_id: string;
