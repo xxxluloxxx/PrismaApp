@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -10,14 +11,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { CsvExportButton } from "@/components/dashboard/csv-export-button";
+import { DashboardDateFilter } from "@/components/dashboard/dashboard-date-filter";
+import { QuoteStatusChart } from "@/components/dashboard/quote-status-chart";
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
 import { TopTreatmentsChart } from "@/components/dashboard/top-treatments-chart";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { isAdmin } from "@/lib/types/profile";
+import { QUOTE_STATUS_LABELS, type QuoteStatus } from "@/lib/types/quote";
 import { cn } from "@/lib/utils";
 import {
   getMonthlyRevenue,
+  getQuoteStatusPortfolio,
   getRevenueTrend,
   getTopTreatments,
 } from "@/lib/supabase/insights";
@@ -79,7 +85,17 @@ async function countQuotesByStatus(
   }
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string }>;
+}) {
+  const params = await searchParams;
+  const dateFrom = params.dateFrom || undefined;
+  const dateTo = params.dateTo || undefined;
+  const range =
+    dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined;
+
   const result = await getCurrentProfile();
   const profile = result.profile;
   const admin = profile ? isAdmin(profile) : false;
@@ -92,13 +108,15 @@ export default async function DashboardPage() {
       countQuotesByStatus("partially_paid"),
     ]);
 
-  const [monthlyRevenue, topTreatments, revenueTrend] = admin
-    ? await Promise.all([
-        getMonthlyRevenue(),
-        getTopTreatments(10),
-        getRevenueTrend(6),
-      ])
-    : [null, null, null];
+  const [monthlyRevenue, topTreatments, revenueTrend, quoteStatusPortfolio] =
+    admin
+      ? await Promise.all([
+          getMonthlyRevenue(),
+          getTopTreatments(10, range),
+          getRevenueTrend(6, range),
+          getQuoteStatusPortfolio(range),
+        ])
+      : [null, null, null, null];
 
   const metrics = [
     {
@@ -125,6 +143,24 @@ export default async function DashboardPage() {
 
   const hasTreatments = (topTreatments?.length ?? 0) > 0;
   const hasTrendData = (revenueTrend ?? []).some((p) => p.total > 0);
+  const hasPortfolioData = (quoteStatusPortfolio ?? []).some((p) => p.count > 0);
+
+  const portfolioCsvRows = (quoteStatusPortfolio ?? []).map((row) => ({
+    Estado: QUOTE_STATUS_LABELS[row.status as QuoteStatus],
+    Cantidad: row.count,
+    Total: row.total,
+  }));
+
+  const trendCsvRows = (revenueTrend ?? []).map((row) => ({
+    Mes: row.month,
+    Total: row.total,
+  }));
+
+  const treatmentsCsvRows = (topTreatments ?? []).map((row) => ({
+    Tratamiento: row.name,
+    Cantidad: row.count,
+    Ingresos: row.revenue,
+  }));
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -173,13 +209,27 @@ export default async function DashboardPage() {
 
       {admin ? (
         <div className="flex flex-col gap-6">
-          <div>
-            <h2 className="font-heading text-xl font-semibold tracking-tight">
-              Insights
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Panorama financiero y de tratamientos de la clínica
-            </p>
+          <div className="flex flex-col gap-3">
+            <div>
+              <h2 className="font-heading text-xl font-semibold tracking-tight">
+                Insights
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Panorama financiero y de tratamientos de la clínica
+              </p>
+            </div>
+            <Suspense
+              fallback={
+                <p className="text-sm text-muted-foreground">Cargando filtros…</p>
+              }
+            >
+              <DashboardDateFilter
+                filters={{
+                  dateFrom: dateFrom ?? "",
+                  dateTo: dateTo ?? "",
+                }}
+              />
+            </Suspense>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
@@ -228,11 +278,19 @@ export default async function DashboardPage() {
 
             {/* Tendencia de ingresos */}
             <Card className="lg:col-span-2">
-              <CardHeader className="pb-2">
-                <CardDescription>Tendencia de ingresos</CardDescription>
-                <CardTitle className="text-base font-medium">
-                  Últimos 6 meses
-                </CardTitle>
+              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+                <div>
+                  <CardDescription>Tendencia de ingresos</CardDescription>
+                  <CardTitle className="text-base font-medium">
+                    Últimos 6 meses
+                  </CardTitle>
+                </div>
+                {hasTrendData ? (
+                  <CsvExportButton
+                    filename="tendencia-ingresos.csv"
+                    rows={trendCsvRows}
+                  />
+                ) : null}
               </CardHeader>
               <CardContent>
                 {revenueTrend && hasTrendData ? (
@@ -247,13 +305,49 @@ export default async function DashboardPage() {
             </Card>
           </div>
 
+          {/* Cartera por estado */}
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+              <div>
+                <CardDescription>Cartera de presupuestos</CardDescription>
+                <CardTitle className="text-base font-medium">
+                  Distribución por estado
+                </CardTitle>
+              </div>
+              {hasPortfolioData ? (
+                <CsvExportButton
+                  filename="cartera-presupuestos.csv"
+                  rows={portfolioCsvRows}
+                />
+              ) : null}
+            </CardHeader>
+            <CardContent>
+              {quoteStatusPortfolio && hasPortfolioData ? (
+                <QuoteStatusChart data={quoteStatusPortfolio} />
+              ) : (
+                <div className="flex h-[180px] items-center justify-center text-center text-sm text-muted-foreground">
+                  Aún no hay suficientes datos de presupuestos para mostrar la
+                  cartera por estado
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Top tratamientos */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Top tratamientos más usados</CardDescription>
-              <CardTitle className="text-base font-medium">
-                Según presupuestos generados
-              </CardTitle>
+            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+              <div>
+                <CardDescription>Top tratamientos más usados</CardDescription>
+                <CardTitle className="text-base font-medium">
+                  Según presupuestos generados
+                </CardTitle>
+              </div>
+              {hasTreatments ? (
+                <CsvExportButton
+                  filename="top-tratamientos.csv"
+                  rows={treatmentsCsvRows}
+                />
+              ) : null}
             </CardHeader>
             <CardContent>
               {hasTreatments && topTreatments ? (
